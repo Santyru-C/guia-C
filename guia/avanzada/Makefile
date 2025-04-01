@@ -1,5 +1,5 @@
 
-SOURCES = main.tex 
+SOURCES = C-avanzada.tex 
           
 PDFS = $(SOURCES:.tex=.pdf)
 
