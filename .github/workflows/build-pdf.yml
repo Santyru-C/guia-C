@@ -24,15 +24,15 @@ jobs:
 
       - name: Find PDF
         run: |
-          PDF_FILES=$(find guia -type f -name "*.pdf" | tr '\n' ' ')
-          echo "PDF_FILES=$PDF_FILES" >> $GITHUB_ENV
+          mkdir -p output_pdfs
+          find guia -type f -name "*.pdf" -exec cp {} output_pdfs/ \;
         shell: bash
 
-      - name: Upload PDF
+      - name: Upload PDF Artifact
         uses: actions/upload-artifact@v4
         with:
           name: built-pdf
-          path: ${{ env.PDF_FILES }}
+          path: output_pdfs/*.pdf
 
 
   release:
@@ -47,10 +47,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-pdf
-          path: .
-
+          path: downloaded_pdfs  # Descarga todos los PDFs en este directorio
+      
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.PDF_FILES }}
+          files: downloaded_pdfs/*.pdf
           generate_release_notes: true
