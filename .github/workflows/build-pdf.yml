@@ -24,7 +24,7 @@ jobs:
 
       - name: Find PDF
         run: |
-          PDF_FILES=$(find guia -type f -name "*.pdf")
+          PDF_FILES=$(find guia -type f -name "*.pdf" | tr '\n' ' ')
           echo "PDF_FILES=$PDF_FILES" >> $GITHUB_ENV
         shell: bash
 
