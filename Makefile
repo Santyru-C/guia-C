@@ -15,6 +15,7 @@ bump-tool-check:
 release: bump-tool-check
 	git checkout main --quiet
 	$(BUMP_TOOL) bump $(FIRSTARG)
+	git push origin main --tags
 	
 
 .PHONY: release bump-tool-check
