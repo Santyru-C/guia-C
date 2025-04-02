@@ -1,12 +1,3 @@
-BUMP_TOOL := bump-my-version
-DEFAULTARG=patch
-
-empty = $(if $(strip $1),,T)
-
-ARGS = $(filter-out $(word 1,$(MAKECMDGOALS)), $(MAKECMDGOALS))
-FIRSTARG = $(if $(call empty, $(ARGS)),$(DEFAULTARG),$(word 1,$(ARGS)))
-
-
 
 all: avanzada basica
 
@@ -16,15 +7,4 @@ basica:
 avanzada:
 	$(MAKE) -C avanzada
 
-bump-tool-check:
-	@if ! command -v bump-my-version >/dev/null 2>&1; then \
-		echo "❌ Error: 'bump-my-version' no está instalado. Instálalo con 'uv tool install bump-my-version'"; \
-		exit 1; \
-	fi
-
-release: bump-tool-check
-	git checkout main --quiet
-	$(BUMP_TOOL) $(FIRSTARG)
-	
-
-.PHONY: all avanzada basica release bump-version
+.PHONY: all avanzada basica
