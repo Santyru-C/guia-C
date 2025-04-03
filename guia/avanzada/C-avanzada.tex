@@ -94,9 +94,180 @@ listing only,
 
 \maketitle
 
+\section*{Estructuras}
+\epigraph{\textit{Insanity consists of building major structures upon foundations which do not exist.}}
+
+\subsection*{¿Qué es una estructura?}
+
+\begin{importantbox}
+  \centering
+  Una estructura es una \textbf{colección de variables} de distintos tipos, agrupadas bajo un mismo nombre.
+\end{importantbox}
+
+Las estructuras son una forma de agrupar datos relacionados en un solo tipo de dato.
+Por ejemplo, si quisiéramos representar un \textbf{punto} en el espacio 3D, podríamos usar una estructura que contenga tres variables de tipo \hl{float} (una para cada coordenada).
+Podríamos definir una estructura \hl{Punto} de la siguiente manera:
+
+\begin{cbox}[unbreakable]{}
+  #include <stdio.h>
+
+  struct Punto {
+      float x;
+      float y;
+      float z;
+  };
+  int main() {
+      struct Punto p1;
+      p1.x = 1.0;
+      p1.y = 2.0;
+      p1.z = 3.0;
+
+      printf("Punto: (%f, %f, %f)\n", p1.x, p1.y, p1.z);
+      return 0;
+  }
+\end{cbox}
+
+Podemos definir arrays dentro de las estructuras:
+
+\begin{cbox}[]{struct}
+  #define NAME_LEN 50
+
+  struct {
+    int elo;
+    char name[NAME_LEN + 1];
+    int ranking;
+  } player;
+\end{cbox}
+
+Esta estructura tiene tres campos: \hl{elo} (un entero), \hl{name} (una cadena de caracteres) y \hl{ranking} (otro entero). Su layout en memoria sería algo así:
+
+\begin{center}
+  \includegraphics[scale=0.3]{./img/struct.png}  
+  \captionof{table}{Struct en memoria}
+  \label{fig:struct}
+\end{center}
+
+Podemos inicializar una estructura al momento de declararla, usando llaves:
+
+\begin{cbox}[]{Inicialización de struct}
+#define NAME_LEN 50
+
+struct player{
+  int elo;
+  char name[NAME_LEN + 1];
+  int ranking;
+};
+
+struct player player1 = { 2800, "Magnus Carlsen", 1 },
+struct player player2 = { 2700, "Fabiano Caruana", 2 };
+
+\end{cbox}
+
+En este momento, es conveniente mencionar el keyword \hl{typedef}, que nos permite definir un nuevo tipo de dato basado en un tipo existente. El nuevo tipo también se conoce por el nombre de \textbf{type alias}. 
+Esto es útil para simplificar la declaración de estructuras y hacer el código más legible. 
+
+\begin{cbox}[]{typedef}
+typedef float real_t;
+typedef int quantity_t;
+typedef unsigned long int size_t; // en <stdint.h>
+typedef uint32_t vaddr_t; // direccion virtual.
+typedef uint32_t paddr_t; // direccion fisica.
+\end{cbox}
+
+Notar como primero viene el tipo original y luego el nuevo tipo.
+
+En el siguiente fragmento definimos una estructura y le asignamos un alias \hl{player\_t} para poder usarlo más fácilmente en el resto del código. Además, notar el tipo de inicialización alternativa de \hl{player3}:
+
+\begin{cbox}[]{typedef de struct}
+#define NAME_LEN 50
+
+typedef struct {
+  int elo;
+  char name[NAME_LEN + 1];
+  int ranking;
+} player_t;
+
+player_t player1 = { 2800, "Magnus Carlsen", 1 },
+player_t player2 = { 2700, "Fabiano Caruana", 2 };
+player_t player3 = { .name = "Hikaru Nakamura", 
+                     .ranking = 3, 
+                     .elo = 2600}; //forma alternativa
+\end{cbox}
+
+Podemos acceder a los miembros de una estructura usando el operador \hl{.} (punto) y tratar a esa variable como una variable normal. Por otro lado, la operación asignación \hl{=} en \hl{struct} produce una copia de la estructura completa.
+
+\begin{cbox}[]{miembros}
+player_t magnus = { 2800, "Magnus Carlsen", 1 },
+player_t faustino;
+
+printf("Elo: %d\n", magnus.elo);
+printf("Name: %s\n", magnus.name);
+printf("Ranking: %d\n", magnus.ranking);
+
+magnus.elo = 2700;
+magnus.ranking--;
+
+faustino = magnus; // copia de estructura
+\end{cbox}
+
+Las estructuras pueden pasarse a funciones como argumentos y también pueden ser devueltas como valores de retorno.
+
+Como argumentos y valores de retorno
+\begin{cbox}[]{struct como argumento y valor de retorno}
+
+player_t get_player(void) {
+  player_t player = { 3000, "Bobby Fischer", 1 };
+  return player;
+}
+
+void print_player(player_t player) {
+  printf("Elo: %d\n", player.elo);
+  printf("Name: %s\n", player.name);
+  printf("Ranking: %d\n", player.ranking);
+}
+
+\end{cbox}
+
+Notar que pasar estructuras grandes de esta manera puede ser ineficiente, ya que se copian todos los datos de la estructura. En su lugar, se suele usar punteros a estructuras, que son más eficientes. Lo veremos más adelante.
+
+Nada impide que armemos un array de estructuras, como el siguiente:
+
+
+
+\begin{cbox}[]{array de struct}
+typedef struct {
+  char* pais;
+  int code;
+} dials_code_t;
+
+dials_code_t country_codes[] = {
+  {"Argentina", 54},
+  {"Brasil", 55},
+  {"Chile", 56},
+  {"Uruguay", 598}
+};
+
+printf("Código para Argentina: %d\n", country_codes[0].code);
+\end{cbox}
+
+La inicialización puede ser parcial también, como en el siguiente ejemplo:
+
+\begin{cbox}[]{Inicialición de array de struct}
+dials_code_t country_codes[100] = {
+  [0] = {"Argentina", 54},
+  [1] = {"Brasil", 55},
+  [2] = {"Chile", 56},
+  [3].pais = "Uruguay", [3].code = 598,
+  // ... el resto se inicializa en 0
+};
+\end{cbox}
+
+\newpage
 \section*{Punteros}
+
+\epigraph{\textit{Paradox is a pointer telling you to look beyond it. If paradoxes bother you, that betrays your deep desire for absolutes. The relativist treats a paradox merely as interesting, perhaps amusing or even, dreadful thought, educational.}}
+
 \subsection*{¿Qué es un puntero?}
-\label{sec:introduccion}
 
 \begin{importantbox}
   \centering
