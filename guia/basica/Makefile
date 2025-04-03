@@ -11,6 +11,7 @@ all: $(PDFS)
 
 %.pdf: %.tex
 	pdflatex $(PDFFLAGS) $<
+	pdflatex $(PDFFLAGS) $<
     
 clean:
 	rm -rf *.aux *.log *.toc *.pdf *.snm *.out *.gz *.nav *.vrb
