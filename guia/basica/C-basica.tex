@@ -607,7 +607,7 @@ En relación al shift a derecha:
 
 \subsection*{Máscaras}
 
-La operación de máscara es una operación muy común en C. Consiste en aplicar una operación binaria de AND u OR bit a bit entre dos números, de manera de afectar ciertos bits de la palabra con 0 o con 1, dejando el resto de los bits intactos. Por eso se llama máscara, porque enmascaramos a los bits que no queremos modificar.
+La operación de máscara es una operación muy común en C. Consiste en aplicar una operación binaria de AND u OR bit a bit entre dos números, de manera de afectar ciertos bits de una \texttt{palabra}\footnote{Nos referimos a palabra de manera genérica para hablar de una secuencia de bits que tenga sentido tratar como una unidad, por ejemplo 32-bits} con 0 o con 1, dejando el resto de los bits intactos. Por eso se llama máscara, porque enmascaramos a los bits que no queremos modificar.
 
 \begin{center}
   \includegraphics[scale=0.3]{./img/mask.png}
@@ -1439,7 +1439,7 @@ Las dependencias que un módulo \hl{.c} puede tener con los headers \hl{.h} pued
 \end{bashbox}
 
 Esto es un problema, porque si tenemos muchos módulos y muchos headers, se hace muy difícil mantenerlo. Además, si un header incluye a otro header, y este último cambia, el primero también debería recompilarse. Pero no lo sabemos a menos que mantengamos el árbol de dependencias a mano. Los include guards justamente evitan duplicaciones en los include, pero cuando tenemos que saber quién incluye a quién y tenemos que además mantener el árbol de dependencias a mano, nos estamos plantando bombas en el camino. Por eso existen unos flags de compilación que se le pueden pasar a gcc: \hl{-MMD -MP}. Esto hace que genere unos archivos de dependencias con extensión \hl{.d}. Se pueden chusmear, porque se van a  generar en el directorio de trabajo. 
-Ya que el compilador estudia todas las dependencias entre los archivos, como parte de su proceso de compilación habitual, incluyendo este flag le decimos que nos genere targets armados de Makefile que ya nos sirvan. Es un ejemplo de cooperación entre el compilador y make. Finalmente, lo que hacemos con el último \hl{-include} es justamente "pegar" esas reglas para informarle a make que tenga en cuenta esas dependencias y dispare la compilación en caso de cambios en los headers. El \hl{-include} le dice a make que incluya el archivo de dependencias, pero no arroje un error si no existe. Alta black magic
+Ya que el compilador estudia todas las dependencias entre los archivos, como parte de su proceso de compilación habitual, incluyendo este flag le decimos que nos genere targets armados de Makefile que ya nos sirvan. Es un ejemplo de cooperación entre el compilador y make. Finalmente, lo que hacemos con el último \hl{-include} es justamente "pegar" esas reglas para informarle a make que tenga en cuenta esas dependencias y dispare la compilación en caso de cambios en los headers. El \hl{-include} le dice a make que incluya el archivo de dependencias, pero no arroje un error si no existe. Alta black magic.
 
 \begin{center}
   \includegraphics[scale=0.5]{./img/drop_makefile.png}
