@@ -14,5 +14,5 @@ all: $(PDFS)
 	pdflatex $(PDFFLAGS) $<
     
 clean:
-	rm -rf *.aux *.log *.toc *.pdf *.snm *.out *.gz *.nav *.vrb
+	rm -rf *.aux *.log *.toc *.pdf *.snm *.out *.gz *.nav *.vrb _minted* *.fdb_latexmk *fls *.listing
 
