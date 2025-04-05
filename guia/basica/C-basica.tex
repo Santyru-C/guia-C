@@ -335,13 +335,6 @@ Para tener idea de los tamaños típicos en una arquitectura de 64 bits, podemos
 	\end{tabular}%
 	\end{table}
 
-% \begin{center}
-  
-%   \includegraphics[scale=0.5]{./img/tipos_de_datos.png}  
-%   \captionof{table}{Tamaños típicos en 64 bits}
-%   \label{fig:tipos_de_datos}
-% \end{center}
-
 ¿Por qué hablamos de tamaños típicos? Porque el tamaño de los tipos de datos en C no está definido por el estándar, sino que depende de la arquitectura y del compilador. Por ejemplo, en una arquitectura de 32 bits, un \texttt{int} puede ser de 4 bytes, mientras que en una arquitectura de 64 bits, puede ser de 8 bytes.
 El estándar sólo define límites mínimos para los tamaños de los tipos de datos. A continuación, se muestra un ejemplo de cómo se pueden imprimir los tamaños de los tipos de datos en C:
 
@@ -503,7 +496,7 @@ Dependiendo del cast, pueden pasar dos cosas:
 En general, si tenemos activados los warnings del compilador, vamos a tener un warning si se realiza un cast implícito que pueda perder información. Si realizamos un cast explícito, el compilador no nos va a avisar si estamos perdiendo información, ya que asume que el programador sabe lo que está haciendo.
 
 \begin{exbox}
-  Realizar un programa que imprima el valor de \texttt{0.1} como \texttt{float} y como \texttt{double}. Luego, realizar un cast de \texttt{float} a \texttt{int} y de \texttt{double} a \texttt{int}. ¿Qué sucede? ¿Por qué?
+  Realizar un programa que imprima el valor de \texttt{0.1} como \texttt{float} y como \texttt{double}. Luego, realizar un cast de \texttt{float} a \texttt{int} y de \texttt{double} a \texttt{int}. ¿Qué sucede?
 \end{exbox}
 
 \begin{exbox}
