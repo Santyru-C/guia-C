@@ -1,4 +1,6 @@
 
+MAKEFLAGS += --no-print-directory
+
 all: avanzada basica
 
 basica:
@@ -7,4 +9,8 @@ basica:
 avanzada:
 	$(MAKE) -C avanzada
 
-.PHONY: all avanzada basica
+clean:
+	$(MAKE) -C basica clean
+	$(MAKE) -C avanzada clean
+
+.PHONY: all avanzada basica clean
