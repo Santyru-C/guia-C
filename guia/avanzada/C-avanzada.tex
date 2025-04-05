@@ -106,28 +106,55 @@ listing only,
 
 Las estructuras son una forma de agrupar datos relacionados en un solo tipo de dato.
 Por ejemplo, si quisiéramos representar un \textbf{punto} en el espacio 3D, podríamos usar una estructura que contenga tres variables de tipo \hl{float} (una para cada coordenada).
-Podríamos definir una estructura \hl{Punto} de la siguiente manera:
+Podríamos definir una estructura \hl{punto} de la siguiente manera:
 
-\begin{cbox}[unbreakable]{}
+\begin{cbox}[unbreakable]{struct}
   #include <stdio.h>
 
-  struct Punto {
+  struct punto {
       float x;
       float y;
       float z;
   };
   int main() {
-      struct Punto p1;
+      struct punto p1;
       p1.x = 1.0;
       p1.y = 2.0;
       p1.z = 3.0;
 
-      printf("Punto: (%f, %f, %f)\n", p1.x, p1.y, p1.z);
+      printf("punto: (%f, %f, %f)\n", p1.x, p1.y, p1.z);
       return 0;
   }
 \end{cbox}
 
-Podemos definir arrays dentro de las estructuras:
+Podemos acceder a los miembros de una estructura usando el operador \hl{.} (punto) y tratar a esa variable como una variable normal. En el ejemplo, definimos una estructura llamada \hl{punto} que tiene tres campos: \hl{x}, \hl{y} y \hl{z}, todos de tipo \hl{float}. Luego, en la función \hl{main}, creamos una variable de tipo \hl{punto} llamada \hl{p1} y le asignamos valores a sus campos. Podemos decir, que \hl{struct punto} es un \textbf{tipo de dato compuesto} que agrupa tres variables de tipo \hl{float}.
+Podemos definir estructuras anidadas, es decir, estructuras dentro de otras estructuras. Por ejemplo, si quisiéramos representar un \textbf{jugador} en un mapa, podríamos definir una estructura \hl{player} que contenga otra estructura \hl{punto} para representar su posición en coordenadas cartesianas:
+\begin{cbox}[unbreakable]{struct}
+  #include <stdio.h>
+
+  struct punto {
+      float x;
+      float y;
+  };
+
+  struct player {
+      char nombre[50];
+      struct punto posicion;
+  };
+
+  int main() {
+      struct player player1;
+      player1.posicion.x = 1.0;
+      player1.posicion.y = 2.0;
+
+      printf("Posición del player1: (%f, %f)\n", 
+              player1.posicion.x, 
+              player1.posicion.y);
+      return 0;
+  }
+\end{cbox}
+
+Como se ve en el ejemplo, nada impide que definamos arrays dentro de las estructuras. Por otro lado, podemos definir estructuras anónimas, es decir, estructuras que no tienen un nombre específico. Esto puede ser útil para crear estructuras temporales:
 
 \begin{cbox}[]{struct}
   #define NAME_LEN 50
@@ -136,16 +163,27 @@ Podemos definir arrays dentro de las estructuras:
     int elo;
     char name[NAME_LEN + 1];
     int ranking;
-  } player;
+  } player1;
+
+  int main() {
+    player1.elo = 2800;
+    player1.ranking = 1;
+
+    return 0;
+  }
 \end{cbox}
 
-Esta estructura tiene tres campos: \hl{elo} (un entero), \hl{name} (una cadena de caracteres) y \hl{ranking} (otro entero). Su layout en memoria sería algo así:
+Esta estructura tiene tres campos: \hl{elo} , \hl{name} y \hl{ranking}. En particular, podemos ver que ese struct no tiene nombre (se le suele llamar \textit{anonymous struct}), solamente creamos una instancia de esa estructura anónima, llamada \hl{player1}. 
+Su layout en memoria sería algo así:
 
 \begin{center}
   \includegraphics[scale=0.3]{./img/struct.png}  
   \captionof{table}{Struct en memoria}
   \label{fig:struct}
 \end{center}
+
+Notar el \textit{padding} que existe entre el array y el campo \hl{ranking}.
+Esto se debe a que el compilador alinea los datos en memoria para optimizar el acceso a ellos. En este caso, el compilador decidió alinear el campo \hl{ranking} a un múltiplo de 4 bytes, lo que puede ser útil para mejorar la eficiencia del acceso a la memoria. Veremos en más detalle el tema de alineación y padding en la guia de Assembly. 
 
 Podemos inicializar una estructura al momento de declararla, usando llaves:
 
@@ -194,7 +232,7 @@ player_t player3 = { .name = "Hikaru Nakamura",
                      .elo = 2600}; //forma alternativa
 \end{cbox}
 
-Podemos acceder a los miembros de una estructura usando el operador \hl{.} (punto) y tratar a esa variable como una variable normal. Por otro lado, la operación asignación \hl{=} en \hl{struct} produce una copia de la estructura completa.
+Por otro lado, la operación asignación \hl{=} en \hl{struct} produce una copia de la estructura completa.
 
 \begin{cbox}[]{miembros}
 player_t magnus = { 2800, "Magnus Carlsen", 1 },
@@ -212,7 +250,6 @@ faustino = magnus; // copia de estructura
 
 Las estructuras pueden pasarse a funciones como argumentos y también pueden ser devueltas como valores de retorno.
 
-Como argumentos y valores de retorno
 \begin{cbox}[]{struct como argumento y valor de retorno}
 
 player_t get_player(void) {
@@ -265,8 +302,8 @@ dials_code_t country_codes[100] = {
   \begin{itemize}
     \item \hl{nombre} (string)
     \item \hl{vida} (entero)
-    \item \hl{ataque} (entero)
-    \item \hl{defensa} (entero)
+    \item \hl{ataque} (double)
+    \item \hl{defensa} (double)
   \end{itemize}
   Luego, inicializar un array de monstruos y mostrar por pantalla el nombre y la vida de cada uno de ellos.
 \end{exbox}
