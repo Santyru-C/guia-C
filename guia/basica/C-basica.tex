@@ -728,7 +728,7 @@ a[3] = 40;
   \label{fig:array}
 \end{center}
 
-Depende de donde esté definido, un array puede estar sin inicializar. En ese caso, los valores de los elementos del array son basura. Veamos como se inicializa típicamente un array:
+Dependiendo de donde esté definido, un array puede estar sin inicializar. En ese caso, los valores de los elementos del array son basura. Veamos como se inicializa típicamente un array:
 
 \begin{cbox}[]{}
   #define N 100
@@ -962,7 +962,7 @@ La sintaxis de una función es la siguiente:
   \end{Verbatim}
 \end{center}
 
-Las funciones pueden retornar un valor de un tipo en particular (por ejemplo, \hl{int}), o si no devuelven nada, esto se indica con el tipo especial \hl{void}. Es necesario declarar toda función antes de ser usada\footnote{Recordemos que una definición puede servir como declaración, de la misma forma que en definiciones de variables}. Asi también pueden haber múltiples declaraciones de una misma función, pero solo puede haber una única definición de la misma (ODR).
+Las funciones pueden retornar un valor de un tipo en particular (por ejemplo, \hl{int}), o si no devuelven nada, esto se indica con el tipo especial \hl{void}. Si la función no recibe nada, también se indica con \hl{void}.\footnote{Notar que en C, no es lo mismo declarar la función sin argumentos que especificar \hl{void}}. Es necesario declarar toda función antes de ser usada\footnote{Recordemos que una definición puede servir como declaración, de la misma forma que en definiciones de variables}. Asi también pueden haber múltiples declaraciones de una misma función, pero solo puede haber una única definición de la misma (ODR).
 
 \subsection*{Pasaje de parámetros}
 

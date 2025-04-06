@@ -330,6 +330,12 @@ dials_code_t country_codes[100] = {
 \end{center}
 
 En la guía anterior mencionamos al pasar que uno de los tipos nativos de C es el \textbf{puntero}, tipado \hl{int*}, \hl{char*}, \hl{void*}, etc.
+
+\begin{center}
+  \includegraphics[scale=0.2]{./img/pointer.png}  
+  \label{fig:simpsons-puntero}
+\end{center}
+
 Comencemos mirando el siguiente código:
 
 \begin{cbox}[unbreakable,label=sni:xp,nameref={Snippet \ref{sni:xp}}]{}
@@ -423,7 +429,27 @@ Para eso, ¡podemos usar arrays! Como vimos en la guía anterior.
   \textbf{Pista:} ¿Para qué sirve el operador \texttt{\&}? Revisar los ejemplos de código anteriores o ver la sección \nameref{sec:operadores}.
 \end{exbox}
 
-\subsection*{Operando con punteros} 
+Claramente, podemos usar el puntero, no solo para leer el valor de una dirección de memoria, sino también para escribir en ella.
+
+\begin{cbox}[]{Escritura a través de puntero}
+  #include <stdio.h>
+
+  int main(){
+      int x = 42;
+      int *p = &x;
+  
+      printf("x: %d\n", x);
+      *p = 200;
+      printf("x: %d\n", x);
+  }
+\end{cbox}
+
+\begin{bashbox}
+x: 42
+x: 200
+\end{bashbox}
+
+\subsection*{Declaración vs Desreferencia} 
 \label{sec:operadores}
 
 Habrán visto en los ejemplos hasta ahora que al trabajar con punteros contamos con dos operadores principales: \texttt{*} y \texttt{\&}.
@@ -434,37 +460,263 @@ Definamos propiamente:
   \begin{itemize}
     \item Al \textbf{declarar} un puntero: indica que la variable siendo declarada es un puntero al tipo indicado.
     Por ejemplo, \hl{int *num;}\footnote{es equivalente declararlo como \hl{int* num;}. Como era de esperarse, esto lleva a innumerables debates no saldados en internet, por ejemplo: \url{https://stackoverflow.com/questions/398395}} significa que \hl{num} es un puntero a un número entero.
-    \item Cuando acompaña a una variable ya declarada: nos permite \textbf{desreferenciar} la variable que acompaña (que debería ser un puntero), permitiéndonos acceder al valor que se encuentra en la dirección guardada en la variable.
+    \item Cuando acompaña a una variable ya declarada: nos permite \textbf{desreferenciar} la variable que acompaña (que debería ser un puntero), permitiéndonos acceder al valor que se encuentra en la dirección guardada en la variable. \hl{*} en este contexto, es también llamado \textbf{operador de indirección}.
     
     Por ejemplo, en el \nameref{sni:xp}, pueden ver que en el último \hl{printf}, donde imprimimos el valor de lo que apunta \hl{p}, para acceder a ese valor usamos \hl{*p}. 
     Efectivamente, ese \hl{printf} resulta en que se imprima \hl{42} a consola.
   \end{itemize}
   \item \texttt{\&}: se usa para obtener la dirección de una variable.
-  En el \nameref{sni:xp}, usamos \hl{\&x} para declarar \hl{p} ya que queríamos que el puntero \hl{p} guardara la dirección de la variable \hl{x} (es decir, la dirección donde está guardado el valor 42). 
+  En el \nameref{sni:xp}, usamos \hl{\&x} para inicializar \hl{p} ya que queríamos que el puntero \hl{p} guardara la dirección de la variable \hl{x} (es decir, la dirección donde está guardado el valor 42). 
 \end{itemize}
 
-\subsection*{Punteros a punteros}
+\subsection*{\hl{void*}}
 
-Hasta ahora solo usamos punteros a valores enteros, pero dado que un puntero no es más que la dirección de memoria de algún valor de algún tipo, podemos tener \textbf{punteros a cualquier cosa}.
-¡Incluso podemos tener punteros a punteros!
+Un caso particular de punteros es \hl{void*}, que es un puntero genérico. Sirve para almacenar una dirección de memoria de cualquier tipo, pero no se puede desreferenciar directamente. 
+¿Para qué tener un puntero genérico? Bueno, es útil cuando no sabemos de antemano el tipo de dato al que va a apuntar el puntero. Por ejemplo, en funciones que pueden recibir punteros a diferentes tipos de datos, como \hl{malloc} o \hl{free}, que veremos más adelante.
 
-Algunos ejemplos:
+La ventaja es que un \hl{void*} puede apuntar a cualquier tipo de dato, pero la desventaja es que no podemos realizar operaciones aritméticas directamente con él. Para usar un puntero \hl{void*}, debemos convertirlo al tipo de puntero adecuado antes de usarlo. Por ejemplo:
+
+\begin{cbox}[]{}
+  void* ptr;
+  int x = 42;
+  ptr = &x; // ptr apunta a la dirección de x
+
+  // Convertir el puntero void* a un puntero int*
+  int* p = (int*)ptr;
+  printf("Valor: %d\n", *p); // Imprime 42
+\end{cbox}
+
+En este ejemplo, \hl{ptr} es un puntero \hl{void*} que apunta a la dirección de \hl{x}. Luego, convertimos \hl{ptr} a un puntero \hl{int*} para poder desreferenciarlo y acceder al valor de \hl{x}.
+
+\subsection*{Punteros a NULL}
+
+Un puntero puede no apuntar a nada, o \hl{NULL}. Esto es útil para indicar que el puntero no está inicializado o que no apunta a una dirección válida. hl{NULL} es una constante definida en \texttt{stddef.h} y se corresponde con el valor \texttt{0}.
+Podemos usar el operador \hl{==} para comparar un puntero con \hl{NULL} y verificar si apunta a una dirección válida o no. O también, podemos usar a un puntero en una condición lógica (ya que \hl{NULL} es considerado \textbf{falso} en C).
+
+\begin{cbox}[]{Puntero a NULL}
+  #include <stdio.h>
+
+  int main(){
+      int *p = NULL;
+      if (p == NULL) {
+          printf("El puntero no apunta a nada.\n");
+      } else {
+          printf("El puntero apunta a: %d\n", *p);
+      }
+  }
+\end{cbox}
+
+\hl{NULL} puede ser asignado a un puntero de cualquier tipo (\hl{char *}, \hl{int*}, \hl{void*}, etc), y es una buena práctica inicializar los punteros a \hl{NULL} al declararlos. Esto ayuda a evitar errores de acceso a memoria no válida y facilita la depuración del código. Como es de esperarse, si intentamos desreferenciar un puntero que apunta a \hl{NULL}, obtendremos un error de segmentación (segmentation fault). Muchas funciones de la biblioteca estándar de C que devuelven punteros, como \hl{malloc}, devuelven \hl{NULL} si no pueden asignar memoria. Por lo tanto, es importante verificar si el puntero es \hl{NULL} antes de usarlo.
+
+La inicialización de punteros a \hl{NULL} es una buena práctica, ya que evita el uso accidental de punteros no inicializados, lo que puede llevar a errores difíciles de depurar.
+
+\subsection*{Aritmética de punteros}
+
+La aritmética de punteros es una característica poderosa de C que permite realizar operaciones matemáticas con punteros. Esto es útil para recorrer arrays y estructuras de datos dinámicas.
+
+Veamos la siguiente secuencia:
+
+
+\noindent
+\begin{minipage}[t]{0.52\textwidth}
+\begin{cbox}[]{}
+  uint32_t a[] = {28,7,92};
+  uint32_t *pi = a;
+  
+  printf("%d\n", *pi); //28
+\end{cbox}[]{}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+  \includegraphics[width=\linewidth]{img/pointers_arith.01.png}
+\end{minipage}
+
+\vspace {0.5cm}
+Notamos que el puntero \hl{pi} apunta a la dirección de memoria de \hl{a}, que es la dirección de memoria del primer elemento del array. Momento... entonces ¿qué es \hl{a}? ¿Es un puntero? ¿Es un array? \hl{a} representa un array, pero en C, un array se comporta como un puntero al primer elemento del array. Por lo tanto, \hl{a} y \hl{pi} apuntan a la misma dirección de memoria.
+
+En la mayoría de los contextos, \hl{a} se puede usar como un puntero al primer elemento del array. Sin embargo, hay algunas diferencias importantes entre arrays y punteros que debemos tener en cuenta:
 \begin{itemize}
-  \item \hl{char*}: puntero a una tira de \hl{char}s. Si su último carácter es un \hl{\textquotesingle\textbackslash0\textquotesingle}, es equivalente a un string.
-  \item \hl{int**}: puntero (\texttt{int*\textcolor{red}{*}}) a un puntero a un entero (\texttt{\textcolor{red}{int*}*})
-  \item \hl{void*}: puntero a un tipo \textbf{desconocido}.
-        No se puede desreferenciar sin antes especificar su tipo mediante un \textbf{casteo}.
+  \item Un array tiene un tamaño fijo, mientras que un puntero puede apuntar a cualquier dirección de memoria.
+  \item Un array no se puede reasignar a otra dirección de memoria, mientras que un puntero sí.
 \end{itemize}
-%
-\begin{center}
-  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/puntero y doble puntero.png}}
-  \label{fig:doble-puntero}
-\end{center}
+Esto significa que no podemos hacer algo como \hl{a = pi;} porque \hl{a} es un array y no se puede reasignar. Sin embargo, podemos hacer \hl{pi = a;} porque \hl{pi} es un puntero y puede apuntar a cualquier dirección de memoria.
 
-\subsection*{Castear}
+Sigamos con el ejemplo:
+
+\vspace {0.5cm}
+\noindent
+\begin{minipage}[t]{0.52\textwidth}
+  \begin{cbox}[]{}
+    uint32_t a[] = {28,7,92};
+    uint32_t *pi = a;
+    
+    printf("%d\n", *pi); //28
+    pi += 1;
+    printf("%d\n", *pi); //7
+  \end{cbox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+  \includegraphics[width=\linewidth]{img/pointers_arith.02.png}
+\end{minipage}
+
+\vspace {1 cm}
+
+Bien... entonces podemos usar el puntero para movernos por el array. Algo importante a notar es que la operación de ``sumar 1'', en realidad no suma 1, sino que suma el tamaño del tipo al que apunta el puntero. En este caso, \hl{pi} es un puntero a \hl{uint32\_t}, que ocupa 4 bytes. Por lo tanto, al sumar 1 a \hl{pi}, estamos sumando 4 bytes a la dirección de memoria que contiene el primer elemento del array. Esto significa que \hl{pi} ahora apunta al segundo elemento del array.
+
+\vspace {0.5cm}
+
+\noindent
+\begin{minipage}[t]{0.52\textwidth}
+  \begin{cbox}[]{}
+    uint32_t a[] = {28,7,92};
+    uint32_t *pi = a;
+    
+    printf("%d\n", *pi); //28
+    pi += 1;
+    printf("%d\n", *pi); //7
+    pi += 1;
+    printf("%d\n", *pi); //92
+    
+  \end{cbox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+  \includegraphics[width=\linewidth]{img/pointers_arith.03.png}
+\end{minipage}
+\vspace {0.5cm}
+Ahora, si seguimos sumando 1 a \hl{pi}, llegamos al tercer elemento del array. Si seguimos sumando 1, llegaremos a la dirección de memoria que sigue al último elemento del array. Claramente, que un puntero apunte a un lugar de memoria no definido no trae ningún problema, el problema sería si queremos leer o escribir ese lugar de memoria. En ese caso, el comportamiento es indefinido, porque básicamente no sabemos que hay en esa dirección de memoria. Puede haber memoria de nuestro proceso, o puede haber memoria de otro proceso. En caso que haya memoria de otro proceso, el sistema operativo nos va a arrojar un error de \hl{Segmentation fault}. En caso que haya memoria de nuestro proceso, el comportamiento es indefinido: el programa puede seguir ejecutándose con errores lógicos o puede terminar abruptamente en un \hl{Segmentation fault}, según la operación y el tipo de memoria accedida.
+
+Veamos otro ejemplo, para que quede claro el concepto de aritmética de punteros:
+
+\begin{cbox}[]{}
+  int arr[7] = {1,2,3,4,5,6,7};
+  int *p = arr; 
+  // p apunta a la dirección del primer elemento del array
+
+  printf("%d\n", *p); // imprime 1
+  printf("%d\n", *(p+1)); // imprime 2
+  printf("%d\n", *(p+2)); // imprime 3
+  printf("%d\n", p[4]); // imprime 5
+\end{cbox}
+
+\begin{itemize}
+  \item \hl{p} es un puntero a \hl{int}, por lo tanto, al hacer \hl{p+1} estamos sumando 4 bytes a la dirección de memoria de \hl{p}
+  \item al hacer \hl{p+1} estamos apuntando a la dirección de memoria del segundo elemento del array
+  \item \hl{p[4]} es equivalente a \hl{*(p+4)}, es decir, estamos accediendo al quinto elemento del array
+\end{itemize}
+
+Se puede pensar el operador \hl{[]} como un operador de desreferencia. Es un \textit{shorthand} que mueve el puntero y lo desreferencia al mismo tiempo.
+
+\begin{cbox}[]{}
+p[0] == *(p+0) == *p
+p[1] == *(p+1)
+...
+p[n] == *(p+n)
+\end{cbox}
+
+\subsection*{Punteros como argumentos}
+
+Los punteros son útiles para pasar argumentos a funciones sin necesidad de copiar el valor completo. Esto es especialmente útil para estructuras grandes o arrays. Al pasar un puntero, estamos pasando la dirección de memoria del valor, lo que permite a la función modificar el valor original.
+
+Aqui vemos el típico de la función \hl{swap}, que intercambia los valores de dos variables enteras usando punteros:
+
+\begin{cbox}[]{}
+
+    void swap(int *a, int *b) {
+        int tmp = *a;
+        *a = *b;
+        *b = tmp;
+    }
+    int main() {
+        int x = 10, y = 20;
+        swap(&x, &y);
+        printf("x: %d, y: %d\n", x, y);
+    }
+\end{cbox}
+
+Algo bastante común es encontrar funciones que reciben punteros como \hl{const int*} o \hl{const char*}. Esto significa que la función no puede modificar el valor al que apunta el puntero. Por ejemplo, si tenemos una función que recibe un puntero a un string, podemos usar \hl{const char*} para indicar que la función no puede modificar el string original.
+Esto es útil para evitar errores de modificación accidental de datos y para indicar que la función no necesita modificar el valor. Notar que no es el puntero en sí que es constante, sino que a través de ese puntero no podemos modificar el valor al que apunta. 
+
+\begin{exbox}
+Explicar qué sucedería si la firma de la función \hl{swap} fuera \hl{void swap(int a, int b)}. En ese caso, ¿podríamos intercambiar los valores de \hl{x} e \hl{y}? 
+\end{exbox}
+
+\subsection*{Strings \textit{revisited}}
+
+Ahora que vimos punteros, podemos ver que los strings en C son simplemente punteros a \hl{char}, terminados en \hl{\textquotesingle\textbackslash0\textquotesingle}.
+Esto significa que podemos usar punteros para manipular strings de manera eficiente. Por ejemplo, podemos usar punteros para recorrer un string y modificar sus caracteres.
+
+Tener en cuenta que los literales de strings se escriben con comillas dobles (por ejemplo, \hl{"hola"}, \hl{"f"}) y los literales de \hl{char} se escriben con comillas simples y se componen de un solo carácter (por ejemplo, \hl{'h'}, \hl{'f'}, \hl{\textquotesingle\textbackslash n\textquotesingle}).
+El especificador de conversión para chars es \hl{\%c} y el de strings es \hl{\%s}. 
+
+Veamos un ejemplo de cómo usar punteros para manipular strings:
+
+\begin{cbox}[]{}
+  #include <stdio.h>
+
+  site_t lenght(char *str) {
+      size_t len = 0;
+      while (*str != '\0') {
+          len++;
+          str++;
+      }
+      return len;
+  }
+
+  int main() {
+      char str[] = "This too shall pass";
+      printf("Length of string: %zu\n", lenght(str));
+    return 0;
+  }
+\end{cbox}
+
+\begin{exbox}
+Pensar si existe una diferencia entre definir un string como \hl{str1} o como \hl{str2} en el siguiente código:
+\begin{cbox}[]{}
+  int main(){
+    char *str1 = "Hola";
+    char str2[] = "Hola";
+
+    printf("%s\n", str1);
+    printf("%s\n", str2);
+    return 0;
+  }
+  
+\end{cbox}
+
+¿Es lo mismo? Parte de la solución es pensar en la memoria. Veremos un poco más adelante como se organiza la memoria en C.
+\end{exbox}
+
+\begin{exbox}
+Definir una función que reciba un string y lo pase a mayúsculas. \textbf{Pista:} alcanza con sumar la diferencia entre \hl{'A'} y \hl{'a'} a cada letra. Sólo aplicar la conversión si lo que llega es una letra minúscula. 
+\end{exbox}
+
+\begin{exbox}
+Crear programas demostrativos que utilicen las funciones de strings provistas en la librería estándar de C: \hl{strcpy}, \hl{strcat}, \hl{strlen}, \hl{strcmp}, etc. Para acceder a la documentación de cada función se puede usar la línea de comando: \hl{man strcpy}, \hl{man strlen}, etc. 
+
+\textbf{Side quest:} investigar que significa \hl{restrict} en la firma de la función \hl{strcpy}
+\end{exbox}
+
+\newpage
+\section*{Memoria dinámica}
+
+\epigraph{\textit{Memory never recaptures reality. Memory reconstructs. All reconstructions change the original, becoming external frames of reference that inevitably fall short}}
 
 \subsection*{Tipos de memoria}
 
+En C tenemos varios tipos de memoria, y cada uno tiene sus propias características. Es importante entender estos tipos de memoria para poder usar C de manera efectiva.
+
+\begin{importantbox}
+  Entender los tipos de memoria es fundamental para entender como funciona C.
+\end{importantbox}
+
+  \begin{itemize}
+    \item \textbf{Memoria estática}: es la memoria que se reserva en el momento de la compilación. Las variables globales y estáticas se almacenan en esta memoria. Su tamaño no puede cambiar durante la ejecución del programa.
+    \item \textbf{Memoria automática}: es la memoria que se reserva en el momento de la ejecución. Las variables locales se almacenan en esta memoria. Su tamaño puede cambiar durante la ejecución del programa. Es el llamado \textbf{stack} o pila.
+    \item \textbf{Memoria dinámica}: es la memoria que se reserva en el momento de la ejecución, pero su tamaño puede cambiar durante la ejecución del programa. Se utiliza para almacenar datos que no se conocen en tiempo de compilación. Es el llamado \textbf{heap}.
+  \end{itemize}
+  
 Tenemos varios tipos de memoria, y en cuál se encuentra nuestra variable dependerá de dónde y cómo declaramos nuestras variables.
 
 \begin{center}
@@ -490,4 +742,23 @@ Tenemos varios tipos de memoria, y en cuál se encuentra nuestra variable depend
     \end{table}
   
 \end{center}
+
+\section*{Punteros a punteros}
+
+Hasta ahora solo usamos punteros a valores enteros, pero dado que un puntero no es más que la dirección de memoria de algún valor de algún tipo, podemos tener \textbf{punteros a cualquier cosa}.
+¡Incluso podemos tener punteros a punteros!
+
+Algunos ejemplos:
+\begin{itemize}
+  \item \hl{char* argv[]}: puntero a una tira de \hl{char}s. Si su último carácter es un \hl{\textquotesingle\textbackslash0\textquotesingle}, es equivalente a un string.
+  \item \hl{int**}: puntero (\texttt{int*\textcolor{red}{*}}) a un puntero a un entero (\texttt{\textcolor{red}{int*}*})
+  \item \hl{void*}: puntero a un tipo \textbf{desconocido}.
+        No se puede desreferenciar sin antes especificar su tipo mediante un \textbf{casteo}.
+\end{itemize}
+%
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/puntero y doble puntero.png}}
+  \label{fig:doble-puntero}
+\end{center}
+
 \end{document}
