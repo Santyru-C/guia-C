@@ -10,7 +10,7 @@ FIRSTARG = $(if $(call empty, $(ARGS)),$(DEFAULTARG),$(word 1,$(ARGS)))
 
 bump-tool-check:
 	@if ! command -v bump-my-version >/dev/null 2>&1; then \
-		echo "❌ Error: 'bump-my-version' no está instalado. Instálalo con 'uv tool install bump-my-version'"; \
+		echo "❌ Error: 'bump-my-version' no está instalado. Instalalo con 'uv tool install bump-my-version'"; \
 		exit 1; \
 	fi
 
