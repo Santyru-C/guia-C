@@ -693,7 +693,7 @@ Definir una función que reciba un string y lo pase a mayúsculas. \textbf{Pista
 \end{exbox}
 
 \begin{exbox}
-Crear programas demostrativos que utilicen las funciones de strings provistas en la librería estándar de C: \hl{strcpy}, \hl{strcat}, \hl{strlen}, \hl{strcmp}, etc. Para acceder a la documentación de cada función se puede usar la línea de comando: \hl{man strcpy}, \hl{man strlen}, etc. 
+Crear programas demostrativos que utilicen las funciones de strings provistas en la librería estándar de C (en \hl{string.h}): \hl{strcpy}, \hl{strcat}, \hl{strlen}, \hl{strcmp}, etc. Para acceder a la documentación de cada función se puede usar la línea de comando: \hl{man strcpy}, \hl{man strlen}, etc. 
 
 \textbf{Side quest:} investigar que significa \hl{restrict} en la firma de la función \hl{strcpy}
 \end{exbox}
@@ -705,43 +705,57 @@ Crear programas demostrativos que utilicen las funciones de strings provistas en
 
 \subsection*{Tipos de memoria}
 
-En C tenemos varios tipos de memoria, y cada uno tiene sus propias características. Es importante entender estos tipos de memoria para poder usar C de manera efectiva.
+En C tenemos varios tipos de memoria, y cada uno tiene sus propias características. Es importante entender estos tipos de memoria para poder usar C de manera efectiva. Lo que viene a continuación es bastante técnico. Quizás, una vez vistos los ejemplos que siguen, se entienda mejor.
 
 \begin{importantbox}
   Entender los tipos de memoria es fundamental para entender como funciona C.
 \end{importantbox}
 
-  \begin{itemize}
-    \item \textbf{Memoria estática}: es la memoria que se reserva en el momento de la compilación. Las variables globales y estáticas se almacenan en esta memoria. Su tamaño no puede cambiar durante la ejecución del programa.
-    \item \textbf{Memoria automática}: es la memoria que se reserva en el momento de la ejecución. Las variables locales se almacenan en esta memoria. Su tamaño puede cambiar durante la ejecución del programa. Es el llamado \textbf{stack} o pila.
+\begin{itemize}
+  \item \textbf{Memoria de código}: es la memoria que se reserva para almacenar el código del programa. Su tamaño no puede cambiar durante la ejecución del programa. Es de solo lectura. Se define en el \textbf{text segment} del programa.
+  \item \textbf{Memoria automática}: es un tipo de memoria que se reserva en el momento de la ejecución. Las variables locales se almacenan en esta memoria. Su tamaño puede cambiar durante la ejecución del programa. Es el llamado \textbf{stack} o pila.
+    \item \textbf{Memoria estática}: es la memoria que se reserva en el momento de la compilación. Las variables globales y estáticas se almacenan en esta memoria. Su tamaño no puede cambiar durante la ejecución del programa. Se definen en el \textbf{data segment} del programa.
     \item \textbf{Memoria dinámica}: es la memoria que se reserva en el momento de la ejecución, pero su tamaño puede cambiar durante la ejecución del programa. Se utiliza para almacenar datos que no se conocen en tiempo de compilación. Es el llamado \textbf{heap}.
   \end{itemize}
   
-Tenemos varios tipos de memoria, y en cuál se encuentra nuestra variable dependerá de dónde y cómo declaramos nuestras variables.
+Dependiendo de dónde y cómo declaramos nuestras variables, podremos hacer uso de una u otra memoria. Ademas de duración y scope, que vimos anteriormente, cada tipo de memoria tiene un \textbf{linkage} diferente. El linkage de un símbolo (variable o función) es la forma en que es  accesible desde diferentes archivos o módulos. 
+
+Existen tres tipos de linkage:
+\begin{itemize}
+  \item \textbf{interno}: el símbolo es accesible solo dentro del archivo donde se declara.
+  \item \textbf{externo}: el símbolo es accesible desde cualquier archivo que incluya su declaración.
+  \item \textbf{no-linkage}: el símbolo no tiene linkage, es decir, no es accesible fuera de su scope.
+\end{itemize}
+
+La siguiente tabla muestra un panorama de los tipos de memoria, su scope, duración y linkage:
 
 \begin{center}
   \begin{table}[!h]
     \centering
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{|c|c|c|}
-    \hline
-    \rowcolor[HTML]{333333} 
-    {\color[HTML]{FFFFFF} \textbf{Tipos de memoria}} & {\color[HTML]{FFFFFF} \textbf{Scope}} & {\color[HTML]{FFFFFF} \textbf{Lifetime}}                                      \\ \hline
-    Global                                           & El archivo completo                   & \begin{tabular}[c]{@{}c@{}}el tiempo de vida \\ de la aplicación\end{tabular} \\ \hline
-    Estática &
-      \begin{tabular}[c]{@{}c@{}}La función (o bloque) \\ donde está declarada\end{tabular} &
-      \begin{tabular}[c]{@{}c@{}}el tiempo de vida \\ de la aplicación\end{tabular} \\ \hline
-    Automática (local) &
-      \begin{tabular}[c]{@{}c@{}}La función (o bloque) \\ donde está declarada\end{tabular} &
-      \begin{tabular}[c]{@{}c@{}}Mientras la función (o bloque)\\ esté en ejecución\end{tabular} \\ \hline
-    Dinámica &
-      \begin{tabular}[c]{@{}c@{}}Determinado por los punteros que\\  referencian esta memoria\end{tabular} &
-      \begin{tabular}[c]{@{}c@{}}Hasta que la memoria\\  sea liberada\end{tabular} \\ \hline
-    \end{tabular}%
+      \begin{tabular}{|c|c|c|c|}
+      \hline
+      \rowcolor[HTML]{333333} 
+      {\color[HTML]{FFFFFF} \textbf{Scope}} & {\color[HTML]{FFFFFF} \textbf{Lugar}} & {\color[HTML]{FFFFFF} \textbf{Duración}} & {\color[HTML]{FFFFFF} \textbf{Linkage}}                                    \\ \hline
+      \begin{tabular}[c]{@{}c@{}}Global \\(a toda la aplicación)\end{tabular}                                        & data segment  & \begin{tabular}[c]{@{}c@{}}el tiempo de vida \\ de la aplicación (estática)\end{tabular} & externo\\ \hline
+      \begin{tabular}[c]{@{}c@{}} Global \\(al archivo)\end{tabular} & data segment &
+        \begin{tabular}[c]{@{}c@{}}el tiempo de vida \\ de la aplicación (estática)\end{tabular} & interno\\ \hline
+        \begin{tabular}[c]{@{}c@{}}Local a la función o bloque \\(estática)\end{tabular} & data segment &
+      \begin{tabular}[c]{@{}c@{}}el tiempo de vida \\ de la aplicación (estática)\end{tabular} & no linkage\\ \hline  
+      \begin{tabular}[c]{@{}c@{}}Local a la función o bloque \\(automática)\end{tabular} & stack &
+        \begin{tabular}[c]{@{}c@{}}Mientras la función (o bloque)\\ esté en ejecución (automática)\end{tabular} & no linkage\\ \hline
+      Dinámica & heap &        
+        \begin{tabular}[c]{@{}c@{}}Hasta que la memoria\\  sea liberada\end{tabular} & no linkage\\ \hline
+      \end{tabular}%
     }
-    \end{table}
+  \end{table}
   
 \end{center}
+
+\newpage
+Hemos visto hasta ahora la memoria automática y la memoria estática. La memoria automática es la que se reserva en el \textit{stack}, y la memoria estática es la que se reserva en el \textit{data segment}. Más adelante veremos cómo cambiar el linkage de una variable o función. 
+
+La memoria dinámica es la que se reserva en el \textit{heap}, y es la que vamos a ver a continuación.
 
 \section*{Punteros a punteros}
 
