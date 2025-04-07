@@ -452,11 +452,11 @@ x: 200
 \subsection*{Declaración vs Desreferencia} 
 \label{sec:operadores}
 
-Habrán visto en los ejemplos hasta ahora que al trabajar con punteros contamos con dos operadores principales: \texttt{*} y \texttt{\&}.
+Habrán visto en los ejemplos hasta ahora que al trabajar con punteros contamos con dos operadores principales: \hl{*} y \hl{\&}.
 Definamos propiamente:
 
 \begin{itemize}
-  \item \texttt{*}: se usa en dos situaciones
+  \item \hl{*}: se usa en dos situaciones
   \begin{itemize}
     \item Al \textbf{declarar} un puntero: indica que la variable siendo declarada es un puntero al tipo indicado.
     Por ejemplo, \hl{int *num;}\footnote{es equivalente declararlo como \hl{int* num;}. Como era de esperarse, esto lleva a innumerables debates no saldados en internet, por ejemplo: \url{https://stackoverflow.com/questions/398395}} significa que \hl{num} es un puntero a un número entero.
@@ -465,7 +465,7 @@ Definamos propiamente:
     Por ejemplo, en el \nameref{sni:xp}, pueden ver que en el último \hl{printf}, donde imprimimos el valor de lo que apunta \hl{p}, para acceder a ese valor usamos \hl{*p}. 
     Efectivamente, ese \hl{printf} resulta en que se imprima \hl{42} a consola.
   \end{itemize}
-  \item \texttt{\&}: se usa para obtener la dirección de una variable.
+  \item \hl{\&}: se usa para obtener la dirección de una variable.
   En el \nameref{sni:xp}, usamos \hl{\&x} para inicializar \hl{p} ya que queríamos que el puntero \hl{p} guardara la dirección de la variable \hl{x} (es decir, la dirección donde está guardado el valor 42). 
 \end{itemize}
 
@@ -490,7 +490,7 @@ En este ejemplo, \hl{ptr} es un puntero \hl{void*} que apunta a la dirección de
 
 \subsection*{Punteros a NULL}
 
-Un puntero puede no apuntar a nada, o \hl{NULL}. Esto es útil para indicar que el puntero no está inicializado o que no apunta a una dirección válida. hl{NULL} es una constante definida en \texttt{stddef.h} y se corresponde con el valor \texttt{0}.
+Un puntero puede no apuntar a nada, o \hl{NULL}. Esto es útil para indicar que el puntero no está inicializado o que no apunta a una dirección válida. \hl{NULL} es una constante definida en \texttt{stddef.h} y se corresponde con el valor entero \texttt{0}.
 Podemos usar el operador \hl{==} para comparar un puntero con \hl{NULL} y verificar si apunta a una dirección válida o no. O también, podemos usar a un puntero en una condición lógica (ya que \hl{NULL} es considerado \textbf{falso} en C).
 
 \begin{cbox}[]{Puntero a NULL}
