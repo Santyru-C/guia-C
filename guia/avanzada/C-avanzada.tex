@@ -699,7 +699,7 @@ Crear programas demostrativos que utilicen las funciones de strings provistas en
 \end{exbox}
 
 \newpage
-\section*{Memoria dinámica}
+\section*{Memoria}
 
 \epigraph{\textit{Memory never recaptures reality. Memory reconstructs. All reconstructions change the original, becoming external frames of reference that inevitably fall short}}
 
@@ -753,9 +753,352 @@ La siguiente tabla muestra un panorama de los tipos de memoria, su scope, duraci
 \end{center}
 
 \newpage
-Hemos visto hasta ahora la memoria automática y la memoria estática. La memoria automática es la que se reserva en el \textit{stack}, y la memoria estática es la que se reserva en el \textit{data segment}. Más adelante veremos cómo cambiar el linkage de una variable o función. 
+El linkage de una variable definida por fuera de cualquier función lo especificamos con la palabra clave \hl{static}. Esto significa que la variable no es accesible desde otros archivos, pero su duración es la misma que la de una variable global. Por lo tanto, el linkage de una variable estática es interno. Por defecto, el linkage de una variable global es externo.
+Esto también aplica a funciones que tiene por defecto un linkage externo. Si queremos que una función tenga un linkage interno, debemos declararla como \hl{static}. Esto significa que la función no es accesible desde otros archivos.
 
+Veamos ejemplos de lo anterior:
+
+\begin{cbox}[]{archivo lib.h} 
+  #ifndef LIB_H
+  #define LIB_H
+  
+  // Idea: sólo exponer lo necesario a otros archivos
+
+  extern int counter;        // Solo declaración, la definición está en lib.c
+  void area(double radius);  // linkage externo. 
+  
+  #endif
+\end{cbox}
+
+
+\begin{cbox}[]{archivo lib.c}
+  #include <stdio.h>
+  #include "lib.h"
+
+  static const double pi = 3.14159; // definición  de sólo lectura con linkage interno (solo se puede usar en este archivo)
+
+  int counter = 0; // definición con linkage externo
+  
+  static int power(int x) {  // definición con linkage interno (solo se puede usar en este archivo)
+      return x * x;
+  }
+
+  static void print(double area){  // definición con linkage interno (solo se puede usar en este archivo)
+    printf("Area: %.3f\n", area);
+  }
+  
+  void area(double radius) { // definición con linkage externo 
+      double area = pi * power(radius);
+      print(area);
+      counter++;
+  }
+\end{cbox}
+
+\begin{cbox}[]{archivo main.c}
+  
+  #include <stdio.h>
+  #include "lib.h"
+
+  int main() {
+      double radius = 5.0;
+      area(radius); // llamada a la función con linkage externo
+      printf("Counter: %d\n", counter); // acceso a la variable con linkage externo
+
+      // print(3.14); // Error: no está en el header y es static en lib.c
+      // power(3);    // Error: no está en el header ni tiene linkage externo
+      return 0;
+  }
+\end{cbox}
+
+Más información en \url{https://en.cppreference.com/w/c/language/storage_duration}.
+
+Hemos visto hasta ahora la memoria automática y la memoria estática. La memoria automática es la que se reserva en el \textit{stack}, y la memoria estática es la que se reserva en el \textit{data segment}.
 La memoria dinámica es la que se reserva en el \textit{heap}, y es la que vamos a ver a continuación.
+
+\subsection*{Memoria dinámica}
+
+La memoria dinámica es la que se reserva en el \textit{heap}, y es la que se utiliza para almacenar datos que no se conocen en tiempo de compilación. La memoria dinámica se reserva y libera en tiempo de ejecución, lo que permite crear estructuras de datos dinámicas como listas enlazadas, árboles, etc.
+
+Para reservar memoria dinámica en C, usamos las funciones \hl{malloc}, \hl{calloc}, \hl{realloc} y \hl{free}. Estas funciones son parte de la biblioteca estándar de C y se encuentran en el archivo de cabecera \texttt{stdlib.h}.
+\begin{itemize}
+  \item \hl{malloc}: reserva un bloque de memoria de un tamaño específico y devuelve un puntero a la dirección de memoria reservada. La memoria no se inicializa.
+  \item \hl{calloc}: reserva un bloque de memoria para un número específico de elementos de un tamaño específico y devuelve un puntero a la dirección de memoria reservada. La memoria se inicializa a cero.
+  \item \hl{realloc}: cambia el tamaño de un bloque de memoria previamente reservado y devuelve un puntero a la nueva dirección de memoria. Si la nueva dirección es diferente, la memoria anterior se libera automáticamente.
+  \item \hl{free}: libera un bloque de memoria previamente reservado.
+\end{itemize}
+
+Las declaraciones de estas funciones son las siguientes:
+\begin{cbox}[]{}
+  void* malloc(size_t size);
+  void* calloc(size_t num, size_t size);
+  void* realloc(void* ptr, size_t size);
+  void free(void* ptr);
+\end{cbox}
+
+Y se encuentran en \texttt{stdlib.h}.
+
+Analicemos un ejemplo de una función que intenta devolver un array de enteros inicializado:
+
+\begin{cbox}[]{}
+  uint16_t *secuencia(uint16_t n){
+    uint16_t arr[n];
+    for(uint16_t i = 0; i < n; i++)
+      arr[i] = i;
+    return arr;
+  }
+\end{cbox}
+
+\begin{exbox}
+Antes de seguir avanzando, discutan qué sucede si corren el siguiente código:
+\begin{cbox}[]{}
+  #include <stdio.h>
+
+  int main(){
+    uint16_t *arr = secuencia(10);
+    printf("%d\n", arr[0]);
+    return 0;
+  }
+\end{cbox}
+
+\end{exbox}
+
+El problema, básicamente radica en que la variable \hl{arr} es una variable automática, y por lo tanto, se libera al salir de la función. Esto significa que la dirección de memoria a la que apunta \hl{arr} ya no es válida al salir de la función. Por lo tanto, el puntero \hl{arr} en la función \hl{main} apunta a una dirección de memoria inválida.
+Esto es un error común en C, y es importante tener cuidado al usar variables automáticas y punteros. Para evitar este error, podemos usar memoria dinámica para reservar el array. Veamos cómo hacerlo:
+\begin{cbox}[]{}
+  uint16_t *secuencia(uint16_t n){
+    uint16_t *arr = malloc(n * sizeof(uint16_t));
+    if (arr == NULL) {
+      // Manejar el error de asignación de memoria
+      return NULL;
+    }
+    for(uint16_t i = 0; i < n; i++)
+      arr[i] = i;
+    return arr;
+  }
+\end{cbox}
+
+Esta función la utilizaríamos de la siguiente manera:
+
+\begin{cbox}[]{}
+  #include <stdio.h>
+
+  int main(){
+    uint16_t *arr = secuencia(10);
+    if (arr == NULL) {
+      // Manejar el error de asignación de memoria
+      return 1;
+    }
+    for(uint16_t i = 0; i < n; i++)
+      printf("%d\n", arr[i]);
+    free(arr); // Liberar la memoria reservada
+    return 0;
+  }
+\end{cbox}
+
+Notemos que al usar \hl{malloc}, la memoria se reserva en el \textit{heap} y no se libera automáticamente al salir de la función. Por lo tanto, debemos liberar la memoria manualmente usando \hl{free}. Es normal que al alocación de memoria suceda en una función y la liberación en otra. Cuando nos olvidamos de liberar la memoria, se produce una \textbf{fuga de memoria} (\textit{memory leak}), que puede causar problemas de rendimiento y estabilidad en el programa. Por lo tanto, es importante liberar la memoria reservada cuando ya no la necesitamos.
+
+\subsubsection*{Creando una lista simplemente enlazada}
+
+Ahora, veamos un ejemplo un poco más realista. Supongamos que queremos crear una lista simplemente enlazada de nodos, donde cada nodo contiene una dirección que apunta a un archivo en un sistema de archivos determinado. La lista puede contener un número variable de nodos, con la restricción de que una lista solo puede tener nodos que apunten al mismo tipo de sistema de archivos.
+
+Podemos ver la estructura que queremos crear en el siguiente diagrama:
+
+\begin{center}
+  \includegraphics[scale=0.39]{./img/linkedlist.png}  
+  \captionof{table}{Lista simplemente enlazada}
+  \label{fig:memoria}
+\end{center}
+
+Tenemos una primera estructura que representa la lista y que tiene un puntero al primer nodo de la lista. Luego cada nodo, referencia al nodo siguiente. El último nodo apunta a NULL para indicar el final de la lista. Cada nodo tiene un puntero a un archivo, especificado como \hl{void *data}. La lista también tiene un \hl{size} que indica la cantidad de nodos en la lista. La lista tiene un \hl{type} que indica el tipo de sistema de archivos que puede manejar esa lista. 
+
+Veamos primero la declaración es estas estructuras:
+
+\begin{cbox}[]{list.h}
+  #include "type.h"
+  
+  typedef struct node {
+    void* data;
+    struct node* next;
+  } node_t;
+  
+  typedef struct list {
+    type_t type;
+    uint8_t size;
+    node_t* first;
+  } list_t;
+
+  list_t* listNew(type_t t);
+  void  listAddFirst(list_t* l, void* data); //copia el dato
+  void* listGet(list_t* l, uint8_t i); //se asume: i < l->size
+  void* listRemove(list_t* l, uint8_t i); //se asume: i < l->size
+  void  listDelete(list_t* l);
+
+\end{cbox}
+
+También vemos en este archivo que se declaran las funciones para crear la lista, agregar nodos, obtener nodos, eliminar nodos y eliminar la lista.
+\begin{itemize}
+  \item \hl{listNew} crea una nueva lista y la inicializa con el tipo de sistema de archivos especificado. La función devuelve un puntero a la lista creada.
+  \item \hl{listAddFirst} agrega un nuevo nodo al principio de la lista. La función recibe un puntero a la lista y un puntero a los datos que se van a agregar. La función copia los datos en el nuevo nodo.
+  \item \hl{listGet} obtiene un nodo de la lista en la posición especificada. La función recibe un puntero a la lista y un índice. La función devuelve un puntero a los datos del nodo.
+  \item \hl{listRemove} elimina un nodo de la lista en la posición especificada. La función recibe un puntero a la lista y un índice. La función devuelve un puntero a los datos del nodo eliminado.
+  \item \hl{listDelete} elimina la lista y libera la memoria reservada para los nodos y los datos. La función recibe un puntero a la lista.
+\end{itemize}
+
+El archivo \hl{type.h} tiene la definición de \hl{type\_t} y de las funciones de manejo de archivos para cada sistema:
+
+\begin{cbox}[]{type.h}
+  // type.h
+  typedef enum e_type {
+    TypeFAT32 = 0,
+    TypeEXT4 = 1,
+    TypeNTFS = 2
+  } type_t;
+
+  fat32_t* new_fat32();
+  ext4_t* new_ext4();
+  ntfs_t* new_ntfs();          
+  fat32_t* copy_fat32(fat32_t* file);
+  ext4_t* copy_ext4(ext4_t* file);
+  ntfs_t* copy_ntfs(ntfs_t* file);
+  void rm_fat32(fat32_t* file);
+  void rm_ext4(ext4_t* file);
+  void rm_ntfs(ntfs_t* file);
+\end{cbox}
+
+Se usa un \hl{typedef} para definir el tipo \hl{type\_t}, que es un \hl{enum} que representa los diferentes tipos de sistemas de archivos. Un \hl{enum} es un tipo de dato que permite definir un conjunto de constantes enteras con nombre. En este caso, \hl{TypeFAT32}, \hl{TypeEXT4} y \hl{TypeNTFS} son los nombres de las constantes que representan los diferentes tipos de sistemas de archivos.
+Las funciones de tipo \hl{new\_} crean archivos, y las funciones de tipo \hl{copy\_} copian archivos y las funciones de tipo \hl{rm\_} eliminan archivos. No nos interesa en este ejemplo, la definición de esas funciones, así que vamos a suponer que se encuentran en alguna biblioteca externa.
+
+En la implementación haremos uso del operador \hl{->} y del operador \hl{sizeof}. El operador \hl{->} se usa para acceder a los miembros de una estructura a través de un puntero. Por ejemplo, \hl{l->type} accede al miembro \hl{type} de la estructura \hl{list\_t} a través del puntero \hl{l}. Esto es equivalente a \hl{(*l).type}, pero es más legible y conveniente. El operador \hl{sizeof} es una función que devuelve el tamaño en bytes de un tipo de dato o de una variable. Por ejemplo, \hl{sizeof(uint16\_t)} devuelve el tamaño en bytes del tipo \hl{uint16\_t}. Esto es útil para reservar memoria dinámica, ya que necesitamos saber cuántos bytes necesitamos reservar.
+
+Recordar que \hl{malloc} reserva un bloque de memoria de un tamaño específico y devuelve un puntero a la dirección de memoria reservada. La memoria no se inicializa, por lo que es importante inicializarla antes de usarla.
+
+Veamos la implementación de las funciones en el archivo \hl{list.c}:
+
+\begin{cbox}[breakable]{list.c}
+  list_t* listNew(type_t t) {
+    list_t* l = malloc(sizeof(list_t));
+    l->type = t;  // l->type es equivalente a (*l).type
+    l->size = 0;
+    l->first = NULL;
+    return l;
+  }
+
+  void listAddFirst(list_t* l, void* data) {
+    node_t* n = malloc(sizeof(node_t));
+    switch(l->type) {
+      case TypeFAT32:
+        n->data = (void*) copy_fat32((fat32_t*) data);
+        break;
+      case TypeEXT4:
+        n->data = (void*) copy_ext4((ext4_t*) data);
+        break;
+      case TypeNTFS:
+        n->data = (void*) copy_ntfs((ntfs_t*) data);
+        break;
+    }
+    n->next = l->first;
+    l->first = n;
+    l->size++;
+  }
+
+  //se asume: i < l->size
+  void* listGet(list_t* l, uint8_t i){
+    node_t* n = l->first;
+    for(uint8_t j = 0; j < i; j++)
+      n = n->next;
+    return n->data;
+  }
+
+  //se asume: i < l->size
+  void* listRemove(list_t* l, uint8_t i){
+    node_t* tmp = NULL;
+    void* data = NULL;
+    if(i == 0){
+      data = l->first->data;
+      tmp = l->first;
+      l->first = l->first->next;
+    }else{
+      node_t* n = l->first;
+      for(uint8_t j = 0; j < i - 1; j++)
+        n = n->next;
+      data = n->next->data;
+      tmp = n->next;
+      n->next = n->next->next;
+    }
+    free(tmp);
+    l->size--;
+    return data;
+  }
+
+  void listDelete(list_t* l){
+    node_t* n = l->first;
+    while(n){
+      node_t* tmp = n;
+      n = n->next;
+      switch(l->type) {
+        case TypeFAT32:
+          rm_fat32((fat32_t*) tmp->data);
+          break;
+        case TypeEXT4:
+          rm_ext4((ext4_t*) tmp->data);
+          break;
+        case TypeNTFS:
+          rm_ntfs((ntfs_t*) tmp->data);
+          break;
+      }
+      free(tmp);
+    }
+    free(l);
+  }
+\end{cbox}
+
+Podríamos usar la lista de la siguiente manera:
+
+\begin{cbox}[]{main.c}
+  #include <stdio.h>
+  #include "list.h"
+
+  int main() {
+    list_t* l = listNew(TypeFAT32);
+    fat32_t* f1 = new_fat32();
+    fat32_t* f2 = new_fat32();
+    listAddFirst(l, f1);
+    listAddFirst(l, f2);
+    listDelete(l);
+    rm_fat32(f1);
+    rm_fat32(f2);
+    return 0;
+  }
+\end{cbox}
+
+Estudien este ejemplo con detenimiento. Podemos hacer algunas optimizaciones usando punteros a función, que veremos más adelante. Por ahora, lo importante es entender cómo funcionan los punteros y la memoria dinámica en C.
+
+\begin{exbox}
+  Implementen el ejemplo anterior, implementando funciones dummy para \hl{new\_}, \hl{copy\_} y \hl{rm\_} .Pueden crear un puntero a un int por ejemplo y almacenarlo en el heap y que eso sea "el archivo".
+\end{exbox}
+
+\begin{exbox}
+  Agregar una función a la lista que permita intercambiar el orden de dos nodos. Para esto, se debe tener en cuenta que la lista puede estar vacía o tener un solo nodo. En caso de que la lista tenga un solo nodo o esté vacía, no se debe hacer nada.
+\end{exbox}
+
+\begin{exbox}
+  Extender el ejemplo para que la lista sea doblemente enlazada. Esto significa que cada nodo tendrá un puntero al nodo anterior y al siguiente. Esto permitirá recorrer la lista en ambas direcciones. Para esto, se debe agregar una función para agregar un nodo al final de la lista. Mantener un puntero \hl{last} en la lista que apunte al último nodo. Esto permitirá agregar nodos al final de la lista de manera eficiente.
+\end{exbox}
+
+\subsection*{Organización de la memoria}
+
+La memoria de un programa en C se organiza en diferentes segmentos. Cada segmento tiene un propósito específico y se utiliza para almacenar diferentes tipos de datos. La siguiente imagen muestra la organización típica de la memoria de un programa en C:
+
+\begin{center}
+  \includegraphics[scale=0.39]{./img/memory.png}  
+  \captionof{table}{Imagen de memoria}
+  \label{fig:memoria}
+\end{center}
+
+Cuando decimos variables globales no inicializadas, nos referimos a variables globales que no tienen un valor asignado al momento de la declaración por parte del programador. Esas variables, a diferencia de lo que sucede con las variables locales, tenemos garantías que serán inicializadas a 0. Esto es porque el compilador reserva espacio para esas variables en el segmento \textit{bss} y las inicializa a 0. Esto no sucede con las variables locales, que se reservan en el \textit{stack} y no tienen un valor asignado al momento de la declaración. Por lo tanto, su valor es indefinido.
+Si inicializamos las variables globales, el compilador reserva espacio para esas variables en el \textit{data segment} y las inicializa con el valor que les asignamos. Esto es lo que sucede con las variables globales inicializadas. Las variables estáticas no globales también van a parar al \textit{data segment} o al \textit{bss} según si están inicializadas o no. 
+Vemos además que la pila y el heap crecen en direcciones opuestas. Su tamaño es variable y depende del curso de ejecución que haya tomado el programa. Notar que en el diagrama tenemos el puntero \hl{data} que vive en el stack pero los datos a los que apunta, viven en el heap. Esto suele ser bastante común.
+
 
 \section*{Punteros a punteros}
 
