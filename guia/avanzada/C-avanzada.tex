@@ -1099,11 +1099,23 @@ Cuando decimos variables globales no inicializadas, nos referimos a variables gl
 Si inicializamos las variables globales, el compilador reserva espacio para esas variables en el \textit{data segment} y las inicializa con el valor que les asignamos. Esto es lo que sucede con las variables globales inicializadas. Las variables estáticas no globales también van a parar al \textit{data segment} o al \textit{bss} según si están inicializadas o no. 
 Vemos además que la pila y el heap crecen en direcciones opuestas. Su tamaño es variable y depende del curso de ejecución que haya tomado el programa. Notar que en el diagrama tenemos el puntero \hl{data} que vive en el stack pero los datos a los que apunta, viven en el heap. Esto suele ser bastante común.
 
+\subsection*{Problemas con memoria dinámica}
+
+La memoria dinámica es muy útil, pero también puede ser peligrosa si no se usa correctamente. Algunos problemas comunes son:
+\begin{itemize}
+  \item \textbf{Fugas de memoria (\textit{memory leak})}: esto sucede cuando se reserva memoria dinámica pero no se libera. Esto puede causar problemas de rendimiento y estabilidad en el programa. Para evitar esto, es importante liberar la memoria reservada cuando ya no la necesitamos.
+  \item \textbf{Acceso a memoria no válida (\textit{dangling pointer})}: esto sucede cuando se accede a un puntero que apunta a una dirección de memoria inválida. Esto puede causar errores de segmentación y otros problemas. 
+  \item \textbf{Double free}: esto sucede cuando se libera la misma dirección de memoria dos veces. 
+  \item \textbf{use after free}: esto sucede cuando se accede a un puntero después de haber liberado la memoria a la que apunta. 
+\end{itemize}
+
+La herramienta \hl{valgrind} es muy útil para detectar estos problemas. \hl{valgrind} es una herramienta de depuración que se utiliza para detectar errores de memoria en programas. Para usar \hl{valgrind}, es recomendable compilar el programa con la opción \hl{-g} para incluir información de depuración. Luego, se puede ejecutar el programa con \hl{valgrind ./programa}. \hl{valgrind} mostrará información sobre las fugas de memoria, accesos a memoria no válida y otros problemas de memoria.
 
 \section*{Punteros a punteros}
 
-Hasta ahora solo usamos punteros a valores enteros, pero dado que un puntero no es más que la dirección de memoria de algún valor de algún tipo, podemos tener \textbf{punteros a cualquier cosa}.
+Hasta ahora solo usamos punteros a valores concretos, pero dado que un puntero no es más que la dirección de memoria de algún valor de algún tipo, podemos tener \textbf{punteros a cualquier cosa}.
 ¡Incluso podemos tener punteros a punteros!
+
 
 Algunos ejemplos:
 \begin{itemize}
@@ -1117,5 +1129,9 @@ Algunos ejemplos:
   \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/puntero y doble puntero.png}}
   \label{fig:doble-puntero}
 \end{center}
+
+\section*{Arrays multidimensionales}
+
+\section*{Punteros a función}
 
 \end{document}
