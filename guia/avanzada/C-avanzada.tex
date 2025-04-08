@@ -775,15 +775,19 @@ Veamos ejemplos de lo anterior:
   #include <stdio.h>
   #include "lib.h"
 
-  static const double pi = 3.14159; // definición  de sólo lectura con linkage interno (solo se puede usar en este archivo)
+  // definición  de sólo lectura con linkage interno
+  // (solo se puede usar en este archivo)
+  static const double pi = 3.14159; 
 
   int counter = 0; // definición con linkage externo
   
-  static int power(int x) {  // definición con linkage interno (solo se puede usar en este archivo)
+  // definición con linkage interno (solo se puede usar en este archivo)
+  static int power(int x) { 
       return x * x;
   }
 
-  static void print(double area){  // definición con linkage interno (solo se puede usar en este archivo)
+  // definición con linkage interno (solo se puede usar en este archivo)
+  static void print(double area){  
     printf("Area: %.3f\n", area);
   }
   
@@ -802,7 +806,9 @@ Veamos ejemplos de lo anterior:
   int main() {
       double radius = 5.0;
       area(radius); // llamada a la función con linkage externo
-      printf("Counter: %d\n", counter); // acceso a la variable con linkage externo
+
+      // acceso a la variable con linkage externo
+      printf("Counter: %d\n", counter); 
 
       // print(3.14); // Error: no está en el header y es static en lib.c
       // power(3);    // Error: no está en el header ni tiene linkage externo
@@ -904,9 +910,8 @@ Ahora, veamos un ejemplo un poco más realista. Supongamos que queremos crear un
 Podemos ver la estructura que queremos crear en el siguiente diagrama:
 
 \begin{center}
-  \includegraphics[scale=0.39]{./img/linkedlist.png}  
+  \includegraphics[scale=0.2]{./img/linkedlist.png}  
   \captionof{table}{Lista simplemente enlazada}
-  \label{fig:memoria}
 \end{center}
 
 Tenemos una primera estructura que representa la lista y que tiene un puntero al primer nodo de la lista. Luego cada nodo, referencia al nodo siguiente. El último nodo apunta a NULL para indicar el final de la lista. Cada nodo tiene un puntero a un archivo, especificado como \hl{void *data}. La lista también tiene un \hl{size} que indica la cantidad de nodos en la lista. La lista tiene un \hl{type} que indica el tipo de sistema de archivos que puede manejar esa lista. 
@@ -1074,7 +1079,7 @@ Podríamos usar la lista de la siguiente manera:
 Estudien este ejemplo con detenimiento. Podemos hacer algunas optimizaciones usando punteros a función, que veremos más adelante. Por ahora, lo importante es entender cómo funcionan los punteros y la memoria dinámica en C.
 
 \begin{exbox}
-  Implementen el ejemplo anterior, implementando funciones dummy para \hl{new\_}, \hl{copy\_} y \hl{rm\_} .Pueden crear un puntero a un int por ejemplo y almacenarlo en el heap y que eso sea "el archivo".
+  Implementen el ejemplo anterior, implementando funciones dummy para \hl{new\_}, \hl{copy\_} y \hl{rm\_} .Pueden por ejemplo hacer usar \hl{typedef uint32\_t fat23\_t} para definir el tipo de dato \hl{fat32\_t}. Luego, en las funciones \hl{new\_} y \hl{copy\_} reservar y asignar un valor a la variable. En la función \hl{rm\_} simplemente liberar la memoria.
 \end{exbox}
 
 \begin{exbox}
@@ -1103,10 +1108,10 @@ Vemos además que la pila y el heap crecen en direcciones opuestas. Su tamaño e
 
 La memoria dinámica es muy útil, pero también puede ser peligrosa si no se usa correctamente. Algunos problemas comunes son:
 \begin{itemize}
-  \item \textbf{Fugas de memoria (\textit{memory leak})}: esto sucede cuando se reserva memoria dinámica pero no se libera. Esto puede causar problemas de rendimiento y estabilidad en el programa. Para evitar esto, es importante liberar la memoria reservada cuando ya no la necesitamos.
-  \item \textbf{Acceso a memoria no válida (\textit{dangling pointer})}: esto sucede cuando se accede a un puntero que apunta a una dirección de memoria inválida. Esto puede causar errores de segmentación y otros problemas. 
-  \item \textbf{Double free}: esto sucede cuando se libera la misma dirección de memoria dos veces. 
-  \item \textbf{use after free}: esto sucede cuando se accede a un puntero después de haber liberado la memoria a la que apunta. 
+  \item \textbf{fugas de memoria (\textit{memory leak})}: esto sucede cuando se reserva memoria dinámica pero no se libera. Esto puede causar problemas de rendimiento y estabilidad en el programa. Para evitar esto, es importante liberar la memoria reservada cuando ya no la necesitamos.
+  \item \textbf{acceso a memoria no válida (\textit{dangling pointer})}: esto sucede cuando se accede a un puntero que apunta a una dirección de memoria inválida. Esto puede causar errores de segmentación y otros problemas. 
+  \item \textbf{\textit{double free}}: esto sucede cuando se libera la misma dirección de memoria dos veces. 
+  \item \textbf{\textit{use after free}}: esto sucede cuando se accede a un puntero después de haber liberado la memoria a la que apunta. 
 \end{itemize}
 
 La herramienta \hl{valgrind} es muy útil para detectar estos problemas. \hl{valgrind} es una herramienta de depuración que se utiliza para detectar errores de memoria en programas. Para usar \hl{valgrind}, es recomendable compilar el programa con la opción \hl{-g} para incluir información de depuración. Luego, se puede ejecutar el programa con \hl{valgrind ./programa}. \hl{valgrind} mostrará información sobre las fugas de memoria, accesos a memoria no válida y otros problemas de memoria.
