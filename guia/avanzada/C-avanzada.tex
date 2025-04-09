@@ -1115,7 +1115,11 @@ La memoria dinámica es muy útil, pero también puede ser peligrosa si no se us
   \item \textbf{\textit{use after free}}: esto sucede cuando se accede a un puntero después de haber liberado la memoria a la que apunta. 
 \end{itemize}
 
-La herramienta \hl{valgrind} es muy útil para detectar estos problemas. \hl{valgrind} es una herramienta de depuración que se utiliza para detectar errores de memoria en programas. Para usar \hl{valgrind}, es recomendable compilar el programa con la opción \hl{-g} para incluir información de depuración. Luego, se puede ejecutar el programa con \hl{valgrind ./programa}. \hl{valgrind} mostrará información sobre las fugas de memoria, accesos a memoria no válida y otros problemas de memoria.
+La herramienta \hl{valgrind} es muy útil para detectar estos problemas. \hl{valgrind} es una herramienta de depuración que se utiliza para detectar errores de memoria en programas. Para usar \hl{valgrind}, es recomendable compilar el programa con la opción \hl{-g} para incluir información de depuración. Luego, se puede ejecutar el programa con \hl{valgrind ./programa}. Luego de ejecutar el comando, \hl{valgrind} mostrará información sobre las fugas de memoria, accesos a memoria no válida y otros problemas de memoria. Más info en \url{https://valgrind.org/docs/manual/quick-start.html}.
+
+\begin{exbox}
+  Forzar un error de memoria en en el ejemplo de la lista enlazada, por ejemplo, al eliminar un nodo, liberar la memoria del nodo pero no liberar la memoria de los datos. Luego correr el programa con \hl{valgrind} y ver qué errores se producen.
+\end{exbox}
 
 \newpage
 \section*{Punteros a punteros}
