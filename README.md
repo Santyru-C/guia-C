@@ -1,2 +1,2 @@
 # tp-C
-Trabajo práctico introductorio de C
+Guía introductoria de C
