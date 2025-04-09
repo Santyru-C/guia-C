@@ -1328,6 +1328,164 @@ El código que veremos a continuación inicializa el buffer de video:
 \end{exbox}
 
 \newpage
+
 \section*{Punteros a función}
+\epigraph{\textit{Deep in the human unconscious is a pervasive need for a logical universe that makes sense. But the real universe is always one step beyond logic.}}
+
+Los punteros a función son punteros que apuntan a funciones en lugar de apuntar a datos. Esto permite pasar funciones como argumentos a otras funciones, lo que es útil para implementar callbacks y otras técnicas de programación avanzada.
+Los punteros a función se declaran de la siguiente manera:
+
+\begin{cbox}[]{}
+  tipo_retorno (*nombre_puntero)(tipo_parametro1, tipo_parametro2, ...);
+\end{cbox}
+
+Veamos algunos ejemplos de declaraciones de punteros a función: 
+
+\begin{cbox}[]{}
+  //puntero a una función que toma dos enteros y devuelve un entero
+  int (*suma)(int, int);
+
+  // puntero a una función que toma un puntero a char y devuelve void
+  void (*callback)(char*);
+
+\end{cbox}
+
+Veamos un ejemplo sencillo de uso:
+
+\begin{cbox}[]{puntero a función}
+  #include <stdio.h>
+
+  void print_int(int x) {
+      printf("%d\n", x);
+  }
+  
+  void pretty_print_int(int x) {
+      printf("Entero[%lu bits]: %d\n", sizeof(x)*8, x);
+  }
+  
+  int main() {
+      void (*print)(int) = print_int;
+      print(42);  // () desreferencia el puntero a función
+      print = pretty_print_int;
+      print(3);
+  }
+\end{cbox}
+
+Notar como el operador \hl{()} desreferencia el puntero a función. 
+
+Volviendo al ejemplo de la lista enlazada, podemos lograr una mayor flexibilidad al usar punteros a función para manejar los diferentes tipos de archivos. En lugar de tener un \hl{switch} en la función \hl{listAddFirst}, podemos definir un puntero a función que apunte a la función de copia correspondiente según el tipo de archivo. Esto nos permite agregar nuevos tipos de archivos sin modificar el código existente.
+
+\begin{cbox}[]{type.h cont.}
+  typedef void* (*funcCopy_t)(void*);
+  typedef void (*funcRm_t)(void*);
+  funcCopy_t getCopyFunction(type_t t);
+  funcRm_t getRmFunction(type_t t);
+\end{cbox}
+
+Cuando vamos a devolver punteros a función, es conveniente definir un \hl{typedef} para el puntero a función. Esto hace que el código sea más legible y fácil de entender. En este caso, definimos \hl{funcCopy\_t} como un puntero a una función que toma un puntero a \hl{void} y devuelve un puntero a \hl{void}. También definimos \hl{funcRm\_t} como un puntero a una función que toma un puntero a \hl{void} y no devuelve nada.
+
+\begin{cbox}[]{list.c cont.}
+  funcCopy_t getCopyFunction(type_t t) {
+    switch (t) {
+        case TypeFAT32: return (funcCopy_t) copy_fat32; break;
+        case TypeEXT4:  return (funcCopy_t) copy_ext4; break;
+        case TypeNTFS:  return (funcCopy_t) copy_ntfs; break;
+        default: return NULL; break;
+    }
+  }
+  
+  funcRm_t getRmFunction(type_t t) {
+    switch (t) {
+        case TypeFAT32: return (funcRm_t) rm_fat32; break;
+        case TypeEXT4:  return (funcRm_t) rm_ext4; break;
+        case TypeNTFS:  return (funcRm_t) rm_ntfs; break;
+        default: return NULL; break;
+    }
+\end{cbox}
+
+Entonces podemos modificar las funciones \hl{listAddFirst} y \hl{listDelete} para usar los punteros a función:
+
+\begin{cbox}[]{list.c cont.}
+  void listAddFirst(list_t* l, void* data) {
+    node_t* n = malloc(sizeof(node_t));
+    n->data = getCopyFunction(l->type)(data);
+    n->next = l->first;
+    l->first = n;
+    l->size++;
+  }
+
+  void listDelete(list_t* l){
+    node_t* n = l->first;
+    while(n){
+      node_t* tmp = n;
+      n = n->next;
+      getRmFunction(l->type)(tmp->data);
+      free(tmp);
+    }
+    free(l);
+  }
+\end{cbox}
+
+\begin{exbox}
+  Agregar las modificaciones necesarias al ejemplo de la lista enlazada para usar punteros a función.
+\end{exbox}
+
+\subsubsection*{Declaraciones confusas}
+
+Todo es risas y diversión hasta que nos encontramos con declaraciones siniestras como las siguientes:
+
+\begin{cbox}[]{}
+  // puntero a función que toma dos punteros a double y devuelve un puntero 
+  // a un array de 10 double
+  double (*(*f3)(double*, double*))[10];
+
+  // puntero a función que toma un puntero a char y devuelve un puntero a 
+  // función que toma un puntero a int y devuelve void
+  void (*(*f4)(char*))(int*);
+\end{cbox}
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.4\paperwidth]{./img/function-pointer-meme.png}}
+  \label{fig:function-pointer-meme}
+\end{center}
+
+Pueden visitar el sitio \url{https://cdecl.org/} para ver declaraciones y su interpretación en inglés. En general las declaraciones pueden volverse más manejables con los \hl{typedef} correspondientes.
+
+\begin{cbox}[]{}
+  // definimos primero f3_t, como un puntero a función tradicional
+  typedef double DoubleArray10[10];
+  typedef DoubleArray10* DoubleArray10Ptr;
+  typedef DoubleArray10Ptr (*f3_t)(double*, double*);
+
+  // y luego declaramos f3 de tipo f3_t
+  f3_t f3;
+  
+
+  // definimos primero InnerFunc, como un puntero a función tradicional
+  //  que toma un puntero a int y devuelve void
+  typedef void InnerFunc(int*);
+
+  // leugo, definimos primero f4_t, como un puntero a función tradicional
+  //  que toma  un puntero a char y devuelve un puntero a InnerFunc
+  typedef InnerFunc* (*f4_t)(char*);
+  
+  // finalmente, declaramos f4 de tipo f4_t
+  f4_t f4;
+\end{cbox}
+
+\newpage
+\section*{Referencias}
+
+\epigraph{\textit{Most believe that a satisfactory future requires a return to an idealized past, a past which never in fact existed.}}
+
+\begin{itemize}
+  \item Kernighan, Ritchie - The C Programming Language, 2nd Edition.
+  \item Seacord, Robert - Effective C: An Introduction to Professional C Programming 
+  \item C reference: \url{https://en.cppreference.com/w/c }
+  \item GNU C reference: \url{https://gcc.gnu.org/onlinedocs/gcc/}
+  \item Valgrind documentation: \url{https://valgrind.org/docs/manual/quick-start.html}
+  \item Cdecl: \url{https://cdecl.org/}
+  \item C programming: \url{https://www.learn-c.org/}
+\end{itemize}
 
 \end{document}
