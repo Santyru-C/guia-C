@@ -947,7 +947,7 @@ El string que se pasa por parámetro debe ser copiado a la estructura.
 \end{exbox}
 
 \begin{exbox}
-  Definir una función eliminarPersona que reciba un puntero a una estructura \hl{persona\_t} y libere la memoria reservada para la estructura. 
+  Definir una función \hl{eliminarPersona} que reciba un puntero a una estructura \hl{persona\_t} y libere la memoria reservada para la estructura. 
 \end{exbox}
 
 \subsubsection*{Creando una lista simplemente enlazada}
@@ -1185,7 +1185,7 @@ Algunos ejemplos:
 \begin{itemize}
   \item \hl{int**}: puntero (\texttt{int*\textcolor{red}{*}}) a un puntero a un entero (\texttt{\textcolor{red}{int*}*})
   \item \hl{void**}: puntero a puntero a un tipo \textbf{desconocido}. No se puede desreferenciar sin antes especificar su tipo mediante un \textbf{casteo}.
-  \item \hl{char* argv[]}: array de punteros a \hl{char}. Esto es lo que se usa para pasar argumentos a la función \hl{main}. En este caso, \hl{argv} es un puntero a un array de punteros a \hl{char}. Es decir que cada puntero apunta a un string (un array de \hl{char}). Es lo mismo escribirlo como \hl{char** argv} 
+  \item \hl{char* argv[]}: array de punteros a \hl{char}. Esto es lo que se usa para pasar argumentos a la función \hl{main}. En este caso, \hl{argv} es un puntero a un array de punteros a \hl{char}. Es decir que cada puntero apunta a un string (un array de \hl{char}). Es lo mismo escribirlo como \hl{char** argv}\footnote{Más info en \url{https://en.cppreference.com/w/c/language/main_function}}
         
 \end{itemize}
 
@@ -1252,7 +1252,7 @@ Dado un array de dos dimensiones, definido de la siguiente manera:
 
 Podemos pensar en \hl{a} como un puntero a un puntero. En este caso, \hl{a} es un puntero a un array de \hl{COLS} enteros. Por lo tanto, \hl{a} es de tipo \hl{int (*)[COLS]}. Esto significa que \hl{a} es un puntero a un array de enteros de tamaño \hl{COLS}. Notar que ponemos el operador \hl{*} entre paréntesis para indicar que \hl{a} es un puntero a un array de enteros. Si no lo hiciéramos, \hl{a} sería un array de punteros a enteros, que no es técnicamente lo mismo.
 
-Un array de punteros se vería algo así:
+Un array de punteros a int se vería algo así:
 
 \begin{center}
   \noindent \makebox[\textwidth]{\includegraphics[width=0.6\paperwidth]{./img/array_of_pointers_meme.png}}
@@ -1266,7 +1266,7 @@ Consideraciones:
   \item La notación \hl{a[i][j]} es equivalente a \hl{*(a[i] + j)}.
   \item La notación \hl{a[i][j]} es equivalente a \hl{*(a + i*COLS + j)}.
   \item El tipo de a es \hl{int (*)[COLS]}.
-  \item En memoria, los arrays multidimensionales se almacenan en orden de fila. (\textit{Row-major order})
+  \item En memoria, los arrays multidimensionales se almacenan en orden de fila (\textit{Row-major order})\footnote{\url{https://en.wikipedia.org/wiki/Row-major_order}}. Esto significa que los elementos de la primera fila se almacenan en memoria contiguamente, seguidos por los elementos de la segunda fila, y así sucesivamente.
 \end{itemize}
 
 Veamos un ejemplo:
@@ -1370,7 +1370,8 @@ El código que veremos a continuación inicializa el buffer de video:
   Analicen el código anterior y respondan las siguientes preguntas:
   \begin{itemize}
     \item ¿Qué hace \hl{ca(*p)[VIDEO\_COLS] = (ca(*)[VIDEO\_COLS])VIDEO;}?
-    \item ¿Por qué funciona esto: \hl{p[f][c].c = ' ';}?
+    \item Siendo \hl{p} el puntero declarado ¿Por qué funciona esto: \hl{p[f][c].c = ' ';}? Explicar detalladamente el proceso de desreferenciación.
+    \item ¿Qué pasaría si en vez de \hl{ca(*p)[VIDEO\_COLS]} hubiéramos declarado \hl{ca** p}? 
   \end{itemize}
 \end{exbox}
 
@@ -1514,7 +1515,7 @@ Pueden visitar el sitio \url{https://cdecl.org/} para ver declaraciones y su int
   //  que toma un puntero a int y devuelve void
   typedef void InnerFunc(int*);
 
-  // leugo, definimos primero f4_t, como un puntero a función tradicional
+  // luego, definimos primero f4_t, como un puntero a función tradicional
   //  que toma  un puntero a char y devuelve un puntero a InnerFunc
   typedef InnerFunc* (*f4_t)(char*);
   
