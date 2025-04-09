@@ -672,6 +672,74 @@ Ejemplo de uso de estructura \texttt{if-else}:
   }
 \end{cbox}
 
+\subsubsection*{switch}
+
+La estructura \hl{switch} es una forma de controlar el flujo de un programa en función del valor de una variable. La sintaxis de un \hl{switch} es la siguiente:
+
+\begin{cbox}[]{switch}
+  switch (expression) {
+    case constant1:
+      // código
+      break;
+    case constant2:
+      // código
+      break;
+    default:
+      // código
+  }
+\end{cbox}
+
+El \hl{switch} evalúa la expresión y compara su valor con los valores de cada \hl{case}. Si encuentra una coincidencia, ejecuta el bloque de código correspondiente. Si no encuentra ninguna coincidencia, ejecuta el bloque de código del \hl{default} (si existe).
+El \hl{break} se utiliza para salir del \hl{switch} una vez que se ha ejecutado el bloque de código correspondiente. Si no se incluye un \hl{break}, el programa continuará ejecutando los bloques de código de los siguientes \hl{case} hasta encontrar un \hl{break} o llegar al final del \hl{switch}. Esto se llama \textit{fall-through}.
+La expresión del \hl{switch} debe ser de un tipo entero o un enumerador. Los valores de los \hl{case} deben ser constantes enteras y deben ser únicos dentro del mismo \hl{switch}. No se pueden usar variables como valores de \hl{case}.
+
+\begin{cbox}[]{switch}
+  #include <stdio.h>
+  
+  int main() {
+    int a = 2;
+    switch (a) {
+      case 1:
+        printf("a es 1\n");
+        break;
+      case 2:
+        printf("a es 2\n");
+        break;
+      default:
+        printf("a no es ni 1 ni 2\n");
+    }
+    return 0;
+  }
+\end{cbox}
+
+Es común usar un \hl{switch} en combinación con un \hl{enum} para definir los valores de los \hl{case}. Esto permite tener un código más legible y fácil de mantener. Por ejemplo:
+\begin{cbox}[]{switch con enum}
+  #include <stdio.h>
+  
+  enum Color { RED, GREEN, BLUE };
+  
+  int main() {
+    enum Color c = GREEN;
+    switch (c) {
+      case RED:
+        printf("c es rojo\n");
+        break;
+      case GREEN:
+        printf("c es verde\n");
+        break;
+      case BLUE:
+        printf("c es azul\n");
+        break;
+      default:
+        printf("c no es un color válido\n");
+    }
+    return 0;
+  }
+\end{cbox}
+\begin{notebox}
+  \textbf{Nota:} En este caso, el \hl{switch} es más legible que un \hl{if-else} anidado.
+\end{notebox}
+
 \subsubsection*{ciclos}
 
 Un ciclo \hl{while} se ejecuta mientras la condición sea verdadera. La sintaxis de un ciclo \texttt{while} es la siguiente:
