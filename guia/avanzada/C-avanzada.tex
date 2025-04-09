@@ -699,6 +699,43 @@ Crear programas demostrativos que utilicen las funciones de strings provistas en
 \end{exbox}
 
 \newpage
+\subsection*{struct revisited}
+
+Es normal, al declarar estructuras, querer tener un puntero al mismo tipo de estructura que estamos definiendo. Para hacer esto, lo tenemos que hacer de la siguiente manera:
+
+\begin{cbox}[]{}
+  #define NAME_LEN 50
+
+  typedef struct persona_s {
+    char nombre[NAME_LEN+1];
+    int edad;
+    struct persona_s* hijo;
+} persona_t;
+\end{cbox}
+
+Ejemplo: Juan tiene un hijo que se llama Pablo
+
+\begin{center}
+  \includegraphics[scale=0.35]{./img/juan-pablo-punteros.png}  
+  \captionof{table}{Juan y Pablo}
+\end{center}
+
+\begin{notebox}
+  \centering
+  \textbf{Nota:} usamos \hl{NULL} para indicar que Pablo no tiene hijos
+\end{notebox}
+
+Podemos crear arreglos de structs y funciones que toman structs como parámetros (o retornan structs). En este caso tenemos una función que dado un puntero a un array de \hl{persona\_t} y la longitud, imprime nombre y edad contenido en cada struct.
+
+\begin{cbox}[unbreakable]{}
+  void imprimir_personas(persona_t* personas, uint32_t longitud_array) {
+      for (uint32_t i = 0; i < longitud_array; i++) {
+          printf("Nombre: %s, Edad: %d\n", personas[i].nombre, personas[i].edad);
+      }
+  }
+\end{cbox}
+
+\newpage
 \section*{Memoria}
 
 \epigraph{\textit{Memory never recaptures reality. Memory reconstructs. All reconstructions change the original, becoming external frames of reference that inevitably fall short}}
@@ -903,6 +940,15 @@ Esta función la utilizaríamos de la siguiente manera:
 
 Notemos que al usar \hl{malloc}, la memoria se reserva en el \textit{heap} y no se libera automáticamente al salir de la función. Por lo tanto, debemos liberar la memoria manualmente usando \hl{free}. Es normal que al alocación de memoria suceda en una función y la liberación en otra. Cuando nos olvidamos de liberar la memoria, se produce una \textbf{fuga de memoria} (\textit{memory leak}), que puede causar problemas de rendimiento y estabilidad en el programa. Por lo tanto, es importante liberar la memoria reservada cuando ya no la necesitamos.
 
+\begin{exbox}
+Definir una función \hl{crearPersona} que reciba un nombre y una edad, y devuelva un puntero a una estructura \hl{persona\_t} que contenga esos datos. La función debe reservar memoria dinámica para la estructura y devolver el puntero. Luego, en la función \hl{main}, crear una persona y liberar la memoria reservada.
+El string que se pasa por parámetro debe ser copiado a la estructura.
+\end{exbox}
+
+\begin{exbox}
+  Definir una función eliminarPersona que reciba un puntero a una estructura \hl{persona\_t} y libere la memoria reservada para la estructura. 
+\end{exbox}
+
 \subsubsection*{Creando una lista simplemente enlazada}
 
 Ahora, veamos un ejemplo un poco más realista. Supongamos que queremos crear una lista simplemente enlazada de nodos, donde cada nodo contiene una dirección que apunta a un archivo en un sistema de archivos determinado. La lista puede contener un número variable de nodos, con la restricción de que una lista solo puede tener nodos que apunten al mismo tipo de sistema de archivos.
@@ -914,7 +960,7 @@ Podemos ver la estructura que queremos crear en el siguiente diagrama:
   \captionof{table}{Lista simplemente enlazada}
 \end{center}
 
-Tenemos una primera estructura que representa la lista y que tiene un puntero al primer nodo de la lista. Luego cada nodo, referencia al nodo siguiente. El último nodo apunta a NULL para indicar el final de la lista. Cada nodo tiene un puntero a un archivo, especificado como \hl{void *data}. La lista también tiene un \hl{size} que indica la cantidad de nodos en la lista. La lista tiene un \hl{type} que indica el tipo de sistema de archivos que puede manejar esa lista. 
+Tenemos una primera estructura que representa la lista y que tiene un puntero al primer nodo de la lista. Luego cada nodo, referencia al nodo siguiente. El último nodo apunta a \hl{NULL} para indicar el final de la lista. Cada nodo tiene un puntero a un archivo, especificado como \hl{void *data}. La lista también tiene un \hl{size} que indica la cantidad de nodos en la lista. La lista tiene un \hl{type} que indica el tipo de sistema de archivos que puede manejar esa lista. 
 
 Veamos primero la declaración es estas estructuras:
 
@@ -1474,6 +1520,251 @@ Pueden visitar el sitio \url{https://cdecl.org/} para ver declaraciones y su int
   // finalmente, declaramos f4 de tipo f4_t
   f4_t f4;
 \end{cbox}
+
+\section*{Anexo: Ejemplo integrador}
+
+Como ejemplo integrador vamos a definir algunas operaciones sobre listas enlazadas en C.
+
+Una lista enlazada es una estructura de datos donde cada nodo contiene un valor y un puntero al siguiente nodo de la lista. La lista $[1,2,3]$ se puede pensar de la siguiente manera:
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/lista_enlazada.png}}
+  \label{fig:linked-list}
+\end{center}
+
+El primer nodo de una lista se denomina la \textbf{cabeza} de la lista. Una lista se recorre comenzando por la cabeza y avanzando al siguiente nodo hasta que no haya un siguiente nodo al cual avanzar.
+
+Primero tenemos que definir las estructuras que van a representar a la lista enlazada en memoria. Para esto vamos a definir dos structs, \hl{lista\_t} para representar el la lista en sí misma y \hl{nodo\_t} para los elementos que forman la lista.
+
+\begin{cbox}[unbreakable]{declaración de estructuras de lista enlazada}
+typedef struct nodo_s {
+    // hay que definir struct nodo_s* acá porque el tipo nodo_t 
+    // no está declarado.
+    struct nodo_s* siguiente;
+    int valor;
+} nodo_t;
+
+typedef struct lista_s {
+    nodo_t* cabeza;
+} lista_t;
+\end{cbox}
+
+Una \hl{lista\_t} está definida por el puntero a la cabeza de la lista, es decir el primer nodo de la lista. Luego en cada \hl{nodo\_t} se almacena el valor que este representa y el puntero al siguiente nodo en la lista (si es que dicho nodo existe).
+
+Primero vamos a definir funciones pare crear una lista vacía y un nuevo nodo.
+
+\begin{cbox}[unbreakable]{}
+lista_t* crear_lista_vacia() {
+    lista_t* lista_vacia = malloc(sizeof(lista_t));
+    lista_vacia->cabeza = NULL; // El operador x->y es equivalente a (*x).y
+    return lista_vacia;
+}
+
+nodo_t* crear_nuevo_nodo(int valor) {
+    nodo_t* nuevo_nodo = malloc(sizeof(nodo_t));
+    nuevo_nodo->siguiente = NULL;
+    nuevo_nodo->valor = valor;
+    return nuevo_nodo;
+}
+\end{cbox}
+
+Estas funciones crean una lista vacía y un nodo respectivamente, retornan un puntero a la estructura creada. Ambas estructuras se encuentran en el \textit{heap}.
+
+¿Por qué tenemos que reservar memoria con \hl{malloc} para crear una lista vacía o un nuevo nodo? Pensemos en esta otra implementación (errónea) de \hl{crear\_nuevo\_nodo}:
+
+\begin{cbox}[unbreakable]{}
+nodo_t* crear_nuevo_nodo_incorrecto(int valor) {
+    nodo_t nuevo_nodo; // Esta estructura se almacena en el stack.
+    nuevo_nodo.siguiente = NULL;
+    nuevo_nodo.valor = valor;
+    return &nuevo_nodo; // Retornamos una dirección de memoria del stack.
+}
+\end{cbox}
+
+En esta implementación el nuevo nodo se define en el stack. Esa porción de memoria es válida durante todo el tiempo de vida del \textit{stack frame}, es decir hasta el momento que retorna la función. Luego cualquier acceso a ese puntero estaría escribiendo o leyendo en una dirección de memoria que probablemente le corresponda al \textit{stack frame} de otra función. \textbf{Evitar este tipo de errores en C queda a criterio del programador. Hay instancias en las que se pueden cometer errores de memoria similares a este y que el programa aparente funcionar bien.}
+
+Ahora con estas funciones podemos definir otras operaciones típicas en listas enlazadas, como agregar elementos al final:
+
+\begin{cbox}[unbreakable]{}
+void insertar_al_final(lista_t* lista, int valor) {
+    nodo_t* actual = lista->cabeza;
+    nodo_t* a_insertar = crear_nuevo_nodo(valor);
+
+    // Caso lista vacia. 
+    // Intentar desreferenciar el puntero NULL causa un 
+    // Segmentation Fault (SIGSEGV).
+    if (actual == NULL) {
+        lista->cabeza = a_insertar;
+        return;
+    }
+
+    while (actual->siguiente != NULL)
+        actual = actual->siguiente;
+
+    actual->siguiente = a_insertar;
+}
+\end{cbox}
+
+A diferencia de otros lenguajes en C no hay excepciones\footnote{Esto quiere decir que operaciones que en otros lenguajes, como Python, levantan un error en C pasan desapercibidas a menos que se haga un chequeo explícito. Por ejemplo en Python si $lista = [1,2,3]$, la operación $lista[5]$ levanta una excepción. En C nada nos impide indexar un array fuera de rango.}. Una convención que se suele usar es que una función retorne un código de error indicando si la operación tuvo éxito o no. Por ejemplo podemos escribir una función que borre la cabeza de una lista. Retorna 0 si pudo borrar la cabeza de la lista y retorna -1 si la lista ya estaba vacía:
+
+\begin{cbox}[unbreakable]{}
+int eliminar_cabeza(lista_t* lista) {
+    nodo_t* actual = lista->cabeza;
+    if (actual == NULL)
+        return -1;
+    lista->cabeza = actual->siguiente;
+    free(actual);
+    return 0;
+}
+\end{cbox}
+
+Notar que esta función una vez que acomoda la lista con la nueva cabeza, llama a \hl{free} con el puntero a la anterior cabeza. Esto es necesario pues ese es el último momento en el que el puntero a la cabeza original es alcanzable dentro de algún \textit{scope}. En C si no se indica explícitamente, nunca se libera memoria reservada con \hl{malloc}. Hay que tener cuidado de no llamar a \hl{free} antes de estar seguros de que nadie va a querer usar la porción de memoria referenciada. En programas más complejos esto se puede solucionar, por ejemplo, manteniendo un contador de referencias activas.
+
+Siguiendo este razonamiento podemos escribir una función que borre la lista completa:
+\begin{cbox}[unbreakable]{}
+void eliminar_lista(lista_t* lista) {
+    nodo_t* actual = lista->cabeza;
+    while (actual != NULL) {
+        nodo_t* siguiente = actual->siguiente;
+        free(actual);
+        actual = siguiente;
+    }
+    free(lista);
+}
+\end{cbox}
+
+Como último ejemplo vamos a definir la función \hl{map} sobre listas de números enteros. La función \hl{map} recibe como parámetro un puntero a una \hl{lista\_t} y un puntero a una función de la forma \hl{int (*operacion)(int)}. Esto quiere decir un puntero a una función, llamada \hl{operacion} en este caso, que toma como único argumento un \hl{int} y retorna un \hl{int}. Luego \hl{map} modifica la lista aplicando la función \hl{operacion} a cada uno de sus elementos. 
+Por ejemplo:
+$$
+f(x) = 2x
+$$
+$$
+map([1,2,3,4,5], f) = [2,4,6,8,10]
+$$
+
+\newpage %nueva página para no cortar función map
+
+\begin{cbox}[unbreakable]{}
+void map(lista_t* lista, int (*operacion)(int)) {
+    nodo_t* actual = lista->cabeza;
+    while (actual != NULL) {
+        actual->valor = operacion(actual->valor);
+        actual = actual->siguiente;
+    }
+}
+\end{cbox}
+
+Ejemplo de uso:
+
+\begin{cbox}[unbreakable]{}
+int duplicar(int x) {
+    return x*2;
+}
+
+int main() {
+    lista_t* mi_lista = crear_lista_vacia();
+    insertar_al_final(mi_lista, 1);
+    insertar_al_final(mi_lista, 2);
+    insertar_al_final(mi_lista, 3);
+    insertar_al_final(mi_lista, 4);
+    // En este momento mi_lista = [1,2,3,4]
+    map(mi_lista, &duplicar);
+    // En este momento mi_lista = [2,4,6,8]
+    eliminar_lista(mi_lista);
+    return 0;
+}
+\end{cbox}
+
+Como ejercicio opcional pueden probar implementar la función \hl{filter} que elimina de \hl{lista} todos los elementos en los que \hl{criterio} evalúa a 0. En la página siguiente hay una posible implementación, de todos modos recomendamos que intenten escribir una propia antes de consultarla.
+\begin{bashbox}[minted language=C]
+void filter(lista_t* lista, int (*criterio)(int));
+\end{bashbox}
+
+Un posible criterio podría ser:
+\begin{cbox}[unbreakable]{}
+int es_par(int x) {
+    if (x % 2 == 0)
+        return 1;
+    else
+        return 0;
+}
+\end{cbox}
+
+\newpage
+
+Esta es una posible solución al problema, no es la única, ni la más compleja, ni la más sencilla:
+
+\begin{cbox}[unbreakable]{}
+void filter(lista_t* lista, int (*criterio)(int)) {
+    nodo_t** cabeza_actual = &lista->cabeza;
+    while (*cabeza_actual != NULL) {
+        if (!criterio((*cabeza_actual)->valor)) {
+            nodo_t* a_borrar = *cabeza_actual;
+            *cabeza_actual = (*cabeza_actual)->siguiente;
+            free(a_borrar);
+        } else {
+            cabeza_actual = &(*cabeza_actual)->siguiente;
+        }
+    }
+}
+\end{cbox}
+
+Parece bastante razonable, si la cabeza de la lista no cumple con el criterio, la borro y continúo operando con la sub-lista que me queda. No importa que esté en el primer elemento, el décimo o el último. Pero... ¿Qué está pasando con \hl{cabeza\_actual}? \\
+
+Primero empezamos por el tipo, \hl{cabeza\_actual} es un puntero a un puntero a \hl{nodo\_t}. Esto quiere decir que es una dirección de memoria que apunta a otra dirección de memoria, y esta última apunta a un \textit{struct} de tipo \hl{nodo\_t}. Al principio se inicializa en la dirección de memoria en la que reside el campo \texttt{cabeza} de la lista, este campo es de tipo \hl{nodo\_t*}, por lo que nos queda algo de tipo \hl{nodo\_t**}. \\
+
+Vamos a ver en detalle las primeras iteraciones para la lista $[1,2,3,4,5,..., k]$ para el predicado \texttt{es\_par} dado como ejemplo en el enunciado del ejercicio. \\
+
+La convención de coloreo en los dibujos para los tipos representados es: \\
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.4\paperwidth]{img/referencia.png}}
+\end{center}
+
+\newpage
+
+\texttt{Paso 0:} Antes de entrar al ciclo, inicializamos \hl{cabeza\_actual} en el principio de la lista.
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/init.png}}
+\end{center}
+
+\texttt{Paso 1:} Borrar el 1 de la lista y avanzar al siguiente elemento.
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/iter1.png}}
+\end{center}
+
+Antes de pasar al paso 2 está sucediendo esto:
+\begin{bashbox}[minted language=C]
+    nodo_t* a_borrar = *cabeza_actual;
+    *cabeza_actual = (*cabeza_actual)->siguiente;
+    free(a_borrar);
+\end{bashbox}
+
+\texttt{Paso 2:} Preservar el 2 y avanzar al siguiente elemento. 
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/iter2.png}}
+\end{center}
+
+Antes de pasar al paso 3 está sucediendo esto:
+\begin{bashbox}[minted language=C]
+    cabeza_actual = &(*cabeza_actual)->siguiente;
+\end{bashbox}
+
+\texttt{Paso 3:} Borrar el 3 de la lista y avanzar al siguiente elemento.
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/iter3.png}}
+\end{center}
+\texttt{Paso 4:} Preservar el 4 y avanzar al siguiente elemento. 
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.8\paperwidth]{img/iter4.png}}
+\end{center}
+
+Esto continúa hasta llegar al final de la lista, donde \hl{*cabeza\_actual} va a ser igual a \hl{NULL} y no se entra al ciclo.
 
 \newpage
 \section*{Referencias}
