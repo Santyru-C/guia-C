@@ -619,7 +619,7 @@ p[n] == *(p+n)
 
 Los punteros son útiles para pasar argumentos a funciones sin necesidad de copiar el valor completo. Esto es especialmente útil para estructuras grandes o arrays. Al pasar un puntero, estamos pasando la dirección de memoria del valor, lo que permite a la función modificar el valor original.
 
-Aqui vemos el típico de la función \hl{swap}, que intercambia los valores de dos variables enteras usando punteros:
+Aqui vemos la implementación típica de la función \hl{swap}, que intercambia los valores de dos variables enteras usando punteros:
 
 \begin{cbox}[]{}
 
@@ -1116,26 +1116,212 @@ La memoria dinámica es muy útil, pero también puede ser peligrosa si no se us
 
 La herramienta \hl{valgrind} es muy útil para detectar estos problemas. \hl{valgrind} es una herramienta de depuración que se utiliza para detectar errores de memoria en programas. Para usar \hl{valgrind}, es recomendable compilar el programa con la opción \hl{-g} para incluir información de depuración. Luego, se puede ejecutar el programa con \hl{valgrind ./programa}. \hl{valgrind} mostrará información sobre las fugas de memoria, accesos a memoria no válida y otros problemas de memoria.
 
+\newpage
 \section*{Punteros a punteros}
+\epigraph{\textit{Not knowing what you said, you said it. }}
 
 Hasta ahora solo usamos punteros a valores concretos, pero dado que un puntero no es más que la dirección de memoria de algún valor de algún tipo, podemos tener \textbf{punteros a cualquier cosa}.
 ¡Incluso podemos tener punteros a punteros!
 
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/pointing-int-meme.jpg}}
+  \label{fig:pointing-int-meme}
+\end{center}
+
 
 Algunos ejemplos:
 \begin{itemize}
-  \item \hl{char* argv[]}: puntero a una tira de \hl{char}s. Si su último carácter es un \hl{\textquotesingle\textbackslash0\textquotesingle}, es equivalente a un string.
   \item \hl{int**}: puntero (\texttt{int*\textcolor{red}{*}}) a un puntero a un entero (\texttt{\textcolor{red}{int*}*})
-  \item \hl{void*}: puntero a un tipo \textbf{desconocido}.
-        No se puede desreferenciar sin antes especificar su tipo mediante un \textbf{casteo}.
+  \item \hl{void**}: puntero a puntero a un tipo \textbf{desconocido}. No se puede desreferenciar sin antes especificar su tipo mediante un \textbf{casteo}.
+  \item \hl{char* argv[]}: array de punteros a \hl{char}. Esto es lo que se usa para pasar argumentos a la función \hl{main}. En este caso, \hl{argv} es un puntero a un array de punteros a \hl{char}. Es decir que cada puntero apunta a un string (un array de \hl{char}). Es lo mismo escribirlo como \hl{char** argv} 
+        
 \end{itemize}
-%
+
 \begin{center}
   \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/puntero y doble puntero.png}}
   \label{fig:doble-puntero}
 \end{center}
 
-\section*{Arrays multidimensionales}
+Analicemos el siguiente ejemplo:
+
+\begin{cbox}[]{}
+  void allocateArray(int *arr, int size, int value) {
+    arr = (int*)malloc(size * sizeof(int));
+    if(arr != NULL) {
+      for(int i=0; i<size; i++) {
+        arr[i] = value;
+      }
+    }
+  }
+  
+  // Uso
+  int *vector = NULL;
+  allocateArray(vector,5,45);
+  for(int i = 0; i < 5; i++)
+    printf("%d\n", vector[i]);
+  free(vector);
+\end{cbox}
+\begin{exbox}
+  La idea de la función es alocar un array en el heap e inicializar sus valores con el valor pasado por parámetro ¿Qué sucede si corremos el código anterior? 
+\end{exbox}
+
+Lo que está pasando acá es que la función \hl{allocateArray} recibe un puntero a un entero, pero al asignar memoria a \hl{arr} dentro de la función, solo se está modificando el puntero local. Esto significa que el puntero \hl{vector} en la función \hl{main} no se ve afectado por la asignación de memoria en la función \hl{allocateArray}. Por lo tanto, al intentar acceder a \hl{vector} después de llamar a \hl{allocateArray}, se produce un error de segmentación.
+
+La implementación correcta sería la siguiente:
+
+\begin{cbox}[]{}
+  void allocateArray(int **arr, int size, int value) {
+    *arr = (int*)malloc(size * sizeof(int));
+    if(*arr != NULL) {
+      for(int i=0; i<size; i++) {
+        (*arr)[i] = value;
+      }
+    }
+  }
+  
+  // Uso
+  int *vector = NULL;
+  allocateArray(&vector,5,45);
+  for(int i = 0; i < 5; i++)
+    printf("%d\n", vector[i]);
+  free(vector);
+\end{cbox}
+
+
+\subsection*{Arrays multidimensionales}
+
+Los arrays multidimensionales son arrays de arrays. En C, los arrays multidimensionales se representan como punteros a punteros. Por ejemplo, un array de dos dimensiones se representa como un puntero a un puntero. 
+
+Dado un array de dos dimensiones, definido de la siguiente manera:
+
+\begin{cbox}[]{}
+  int a[ROWS][COLS];
+\end{cbox}
+
+Podemos pensar en \hl{a} como un puntero a un puntero. En este caso, \hl{a} es un puntero a un array de \hl{COLS} enteros. Por lo tanto, \hl{a} es de tipo \hl{int (*)[COLS]}. Esto significa que \hl{a} es un puntero a un array de enteros de tamaño \hl{COLS}. Notar que ponemos el operador \hl{*} entre paréntesis para indicar que \hl{a} es un puntero a un array de enteros. Si no lo hiciéramos, \hl{a} sería un array de punteros a enteros, que no es técnicamente lo mismo.
+
+Un array de punteros se vería algo así:
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.6\paperwidth]{./img/array_of_pointers_meme.png}}
+  \label{fig:array-of-pointers-meme}
+\end{center}
+
+Consideraciones:
+\begin{itemize}
+  \item Un array multidimensional es un array de arrays.
+  \item La memoria se almacena de forma contigua.
+  \item La notación \hl{a[i][j]} es equivalente a \hl{*(a[i] + j)}.
+  \item La notación \hl{a[i][j]} es equivalente a \hl{*(a + i*COLS + j)}.
+  \item El tipo de a es \hl{int (*)[COLS]}.
+  \item En memoria, los arrays multidimensionales se almacenan en orden de fila. (\textit{Row-major order})
+\end{itemize}
+
+Veamos un ejemplo:
+
+\begin{cbox}[]{}
+  int matrix[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+  };
+
+  // Todos estos prints imprimen 7
+  printf("matrix[1][2]: %d\n", matrix[1][2]); 
+  printf("matrix[1][2]: %d\n", *(*(matrix + 1) + 2)); 
+  printf("matrix[1][2]: %d\n", *((int*) matrix + 4*1 + 2)); 
+
+  m[0][3] = 100; // asigna 100 a la fila 0, columna 3
+  printf("matrix[0][3]: %d\n", matrix[0][3]); // imprime 100
+\end{cbox}  
+
+La siguiente figura muestra el layout en memoria de dicho array:
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/arrays-multi.png}}
+  \label{fig:matrix}
+\end{center}
+
+\begin{exbox}
+Analicen cuidadosamente el siguiente ejemplo y respondan las preguntas:
+\begin{cbox}[]{}
+  #include <stdio.h>
+  int main() {
+      int matrix[3][4] = {
+          {1, 2, 3, 4},
+          {5, 6, 7, 8},
+          {9, 10, 11, 12}
+          };
+      // p apunta al int en la fila 0, columna 0
+      int *p = &matrix[0][0]; 
+
+      // ¿qué es reshape?
+      int (*reshape)[2] = (int (*)[2]) p; 
+
+      printf("%d\n", p[3]); // Qué imprime esta línea?
+      printf("%d\n", reshape[1][1]); // Qué imprime esta línea?
+      return 0;
+  }
+\end{cbox}
+\end{exbox}
+
+\subsection*{array de array de structs}
+
+Analicemos ahora un caso un poco más complejo. Esto está sacado directamente del taller de system programming que veremos más adelante en la materia. 
+
+Tenemos una posición de memoria determinada donde se aloja el buffer de vídeo. Todo lo que escribamos en ese buffer se verá reflejado en la pantalla. Recordemos que la memoria en su forma más cruda no es más que un array de bytes, como se ve a continuación:
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/videobuffer01.png}}
+  \label{fig:videobuffer01}
+\end{center}
+
+El buffer de vídeo es un array de bytes y en este formato en particular, cada 2 bytes, se representa un carácter en pantalla. El primer byte representa el carácter en ascii y el segundo byte representa los atributos de color del carácter (\textit{background} y \textit{foreground}). Entonces, nos gustaría interpretar a nuestro buffer como un array de estos elementos de 2 bytes, como se ve en la siguiente figura:
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/videobuffer02.png}}
+  \label{fig:videobuffer02}
+\end{center}
+
+En particular, como una matriz de 80x50, donde cada elemento de la matriz es un \textit{struct} que contiene el carácter y los atributos de color. 
+
+\begin{center}
+  \noindent \makebox[\textwidth]{\includegraphics[width=0.7\paperwidth]{./img/videobuffer03.png}}
+  \label{fig:videobuffer03}
+\end{center}
+
+El código que veremos a continuación inicializa el buffer de video:
+
+\begin{cbox}[]{}
+  #define VIDEO_COLS 80
+  #define VIDEO_FILS 50
+  // Cada posicion de memoria tiene 2 bytes
+  typedef struct ca_s {
+    uint8_t c; // caracter
+    uint8_t a; // atributos
+  } ca;
+  void screen_draw_layout(void) {
+
+    // VIDEO es un puntero a la dirección de memoria del buffer de video
+    ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO;
+    uint32_t f,c;
+    for (f = 0; f <  VIDEO_FILS; f++) {
+      for (c = 0; c < VIDEO_COLS; c++) {
+        p[f][c].c = ' ';
+        p[f][c].a = 0x10;
+      }
+    }
+  }
+\end{cbox}
+
+\begin{exbox}
+  Analicen el código anterior y respondan las siguientes preguntas:
+  \begin{itemize}
+    \item ¿Qué hace \hl{ca(*p)[VIDEO\_COLS] = (ca(*)[VIDEO\_COLS])VIDEO;}?
+    \item ¿Por qué funciona esto: \hl{p[f][c].c = ' ';}?
+  \end{itemize}
+\end{exbox}
+
 
 \section*{Punteros a función}
 
