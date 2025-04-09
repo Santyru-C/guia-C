@@ -970,7 +970,8 @@ El archivo \hl{type.h} tiene la definición de \hl{type\_t} y de las funciones d
   void rm_ntfs(ntfs_t* file);
 \end{cbox}
 
-Se usa un \hl{typedef} para definir el tipo \hl{type\_t}, que es un \hl{enum} que representa los diferentes tipos de sistemas de archivos. Un \hl{enum} es un tipo de dato que permite definir un conjunto de constantes enteras con nombre. En este caso, \hl{TypeFAT32}, \hl{TypeEXT4} y \hl{TypeNTFS} son los nombres de las constantes que representan los diferentes tipos de sistemas de archivos.
+Se usa un \hl{typedef} para definir el tipo \hl{type\_t}, que es un \hl{enum} que representa los diferentes tipos de sistemas de archivos. Recordemos que un \hl{enum} es un tipo de dato que permite definir un conjunto de constantes enteras con nombre. En este caso, \hl{TypeFAT32}, \hl{TypeEXT4} y \hl{TypeNTFS} son los nombres de las constantes que representan los diferentes tipos de sistemas de archivos.
+
 Las funciones de tipo \hl{new\_} crean archivos, y las funciones de tipo \hl{copy\_} copian archivos y las funciones de tipo \hl{rm\_} eliminan archivos. No nos interesa en este ejemplo, la definición de esas funciones, así que vamos a suponer que se encuentran en alguna biblioteca externa.
 
 En la implementación haremos uso del operador \hl{->} y del operador \hl{sizeof}. El operador \hl{->} se usa para acceder a los miembros de una estructura a través de un puntero. Por ejemplo, \hl{l->type} accede al miembro \hl{type} de la estructura \hl{list\_t} a través del puntero \hl{l}. Esto es equivalente a \hl{(*l).type}, pero es más legible y conveniente. El operador \hl{sizeof} es una función que devuelve el tamaño en bytes de un tipo de dato o de una variable. Por ejemplo, \hl{sizeof(uint16\_t)} devuelve el tamaño en bytes del tipo \hl{uint16\_t}. Esto es útil para reservar memoria dinámica, ya que necesitamos saber cuántos bytes necesitamos reservar.
