@@ -442,6 +442,31 @@ En C, se puede declarar una variable como \hl{const} para indicar que su valor n
   i = 2;           // error: i is const-qualified
 \end{cbox}
 
+\subsubsection*{Enumeraciones}
+
+Las enumeraciones son un tipo de dato que permite definir un conjunto de constantes enteras con nombre. Se declaran con la palabra clave \hl{enum} y se pueden usar para mejorar la legibilidad del código. Por ejemplo:
+
+\begin{cbox}{enum}
+  enum Color { RED, GREEN, BLUE };
+  enum Color c = RED;
+  printf("%d\n", c); // imprime 0
+  printf("%d\n", GREEN); // imprime 1
+  printf("%d\n", BLUE); // imprime 2
+\end{cbox}
+
+Las enumeraciones son útiles para definir constantes que representan estados, opciones o categorías. Por ejemplo, se pueden usar para definir los días de la semana, los meses del año, los colores, etc. Las enumeraciones también se pueden usar para mejorar la legibilidad del código y evitar el uso de números mágicos.
+
+Se puede especificar los valores que toman las enumeraciones. Por ejemplo:
+\begin{cbox}{enum con valores}
+  enum Color { RED = 1, GREEN = 2, BLUE = 4 };
+  enum Color c = RED;
+  printf("%d\n", c); // imprime 1
+  printf("%d\n", GREEN); // imprime 2
+  printf("%d\n", BLUE); // imprime 4
+\end{cbox}
+
+En general, el tipo subyacente de una enumeración es un \hl{int}, pero puede ser otros tipos enteros también. para más información: \url{https://en.cppreference.com/w/c/language/enum}. 
+
 \subsection*{Conversiones de tipos}
 Dado una variable en C, puedo realizar una conversion de tipos de manera manual denominada \textit{casting}. Lo que permite el casting (o \textit{casteo}, como se le suele decir), es reinterpretar un valor de cierto tipo como otro.
 
