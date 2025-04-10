@@ -19,5 +19,10 @@ release: bump-tool-check
 	$(BUMP_TOOL) bump $(FIRSTARG)
 	git push origin main --tags
 
+pdfs:
+	$(MAKE) -C guia
+
+clean:
+	$(MAKE) -C guia clean
 
 .PHONY: release bump-tool-check
