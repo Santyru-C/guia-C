@@ -20,7 +20,7 @@ DOCKER_BUILD=1 make pdfs
 ```
 Esto va a crear un contenedor de docker y va a buildear el pdf dentro del contenedor.
 
-Para generar un release, teniendo el un working directory limpio en el branch `main`, se puede hacer:
+Para generar un release, teniendo un working directory limpio en el branch `main`, se puede hacer:
 
 ```bash
 make release <version>
